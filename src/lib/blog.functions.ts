@@ -12,10 +12,22 @@ const POST_SELECT = `
   category:blog_categories(name_en, name_ne, slug)
 `;
 
-const configuredAdminEmails = (process.env.ADMIN_EMAILS ?? process.env.ADMIN_EMAIL ?? "")
-  .split(",")
-  .map((email) => email.trim().toLowerCase())
-  .filter(Boolean);
+const configuredAdminEmails = [
+  "harendralamsal4140@gmail.com",
+  ...(process.env.ADMIN_EMAILS ?? process.env.ADMIN_EMAIL ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean),
+];
+
+function getNormalizedEmail(claims?: {
+  email?: string | null;
+  user_metadata?: { email?: string | null } | null;
+}) {
+  const directEmail = claims?.email?.trim().toLowerCase();
+  if (directEmail) return directEmail;
+  return claims?.user_metadata?.email?.trim().toLowerCase() ?? null;
+}
 
 function publicClient() {
   return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
@@ -33,7 +45,7 @@ async function assertAdmin(supabase: any, userId: string, claims?: { email?: str
 
   if (error) throw new Error(error.message);
 
-  const normalizedEmail = claims?.email?.trim().toLowerCase();
+  const normalizedEmail = getNormalizedEmail(claims);
   const isConfiguredAdmin = !!normalizedEmail && configuredAdminEmails.includes(normalizedEmail);
 
   if (data || isConfiguredAdmin) return;
@@ -89,7 +101,7 @@ export const checkIsAdmin = createServerFn({ method: "GET" })
       .eq("role", "admin")
       .maybeSingle();
 
-    const normalizedEmail = context.claims?.email?.trim().toLowerCase();
+    const normalizedEmail = getNormalizedEmail(context.claims);
     const isConfiguredAdmin = !!normalizedEmail && configuredAdminEmails.includes(normalizedEmail);
 
     return { isAdmin: !!data || isConfiguredAdmin };
