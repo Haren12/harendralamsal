@@ -29,43 +29,71 @@ function getNormalizedEmail(claims?: {
   return claims?.user_metadata?.email?.trim().toLowerCase() ?? null;
 }
 
+function getServerSupabaseEnv() {
+  return {
+    url: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+    publishableKey:
+      process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  };
+}
+
 function publicClient() {
-  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+  const { url, publishableKey } = getServerSupabaseEnv();
+  return createClient<Database>(url!, publishableKey!, {
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
   });
 }
 
+async function getAdminLookupClient() {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    return supabaseAdmin as any;
+  } catch {
+    return null;
+  }
+}
+
+async function getUserEmailFromAuth(supabase: any) {
+  try {
+    const userRes = await supabase.auth.getUser();
+    const maybeUser = (userRes as any)?.data?.user ?? (userRes as any)?.user ?? null;
+    return maybeUser?.email?.trim().toLowerCase() ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function assertAdmin(supabase: any, userId: string, claims?: { email?: string | null }) {
-  const { data, error } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "admin")
-    .maybeSingle();
-
-  if (error) throw new Error(error.message);
-
   const normalizedEmail = getNormalizedEmail(claims);
   const isConfiguredAdmin = !!normalizedEmail && configuredAdminEmails.includes(normalizedEmail);
 
-  // If claims didn't include an email, attempt to fetch the user email from Supabase
+  const adminLookupClient = await getAdminLookupClient();
+  const roleSources = [adminLookupClient, supabase].filter(Boolean) as any[];
+
+  let roleData: { role?: string } | null = null;
+  for (const roleSource of roleSources) {
+    const { data, error } = await roleSource
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (!error && data) {
+      roleData = data;
+      break;
+    }
+  }
+
   let emailFromAuth: string | null = null;
   if (!normalizedEmail) {
-    try {
-      const userRes = await supabase.auth.getUser();
-      // supabase.auth.getUser() returns { data: { user }, error }
-      // handle both client and server shapes
-      const maybeUser = (userRes as any)?.data?.user ?? (userRes as any)?.user ?? null;
-      emailFromAuth = maybeUser?.email?.trim().toLowerCase() ?? null;
-    } catch (e) {
-      // ignore and fallback to role check
-    }
+    emailFromAuth = await getUserEmailFromAuth(supabase);
   }
 
   const finalEmail = normalizedEmail ?? emailFromAuth;
   const finalIsConfiguredAdmin = !!finalEmail && configuredAdminEmails.includes(finalEmail);
 
-  if (data || finalIsConfiguredAdmin) return;
+  if (roleData || isConfiguredAdmin || finalIsConfiguredAdmin) return;
   throw new Error("Forbidden: admin role required");
 }
 
@@ -111,17 +139,42 @@ export const listCategoriesPublic = createServerFn({ method: "GET" }).handler(as
 export const checkIsAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", context.userId)
-      .eq("role", "admin")
-      .maybeSingle();
-
     const normalizedEmail = getNormalizedEmail(context.claims);
     const isConfiguredAdmin = !!normalizedEmail && configuredAdminEmails.includes(normalizedEmail);
 
-    return { isAdmin: !!data || isConfiguredAdmin };
+    const adminLookupClient = await getAdminLookupClient();
+    const roleSources = [adminLookupClient, context.supabase].filter(Boolean) as any[];
+
+    let hasRole = false;
+    for (const roleSource of roleSources) {
+      const { data, error } = await roleSource
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", context.userId)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!error && data) {
+        hasRole = true;
+        break;
+      }
+    }
+
+    if (!hasRole && !isConfiguredAdmin && normalizedEmail) {
+      const emailFromAuth = await getUserEmailFromAuth(context.supabase);
+      const finalIsConfiguredAdmin =
+        !!emailFromAuth && configuredAdminEmails.includes(emailFromAuth);
+      return { isAdmin: finalIsConfiguredAdmin };
+    }
+
+    if (!hasRole && !isConfiguredAdmin) {
+      const emailFromAuth = await getUserEmailFromAuth(context.supabase);
+      const finalIsConfiguredAdmin =
+        !!emailFromAuth && configuredAdminEmails.includes(emailFromAuth);
+      return { isAdmin: finalIsConfiguredAdmin };
+    }
+
+    return { isAdmin: hasRole || isConfiguredAdmin };
   });
 
 export const adminListPosts = createServerFn({ method: "GET" })
