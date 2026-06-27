@@ -12,23 +12,32 @@ const POST_SELECT = `
   category:blog_categories(name_en, name_ne, slug)
 `;
 
+const configuredAdminEmails = (process.env.ADMIN_EMAILS ?? process.env.ADMIN_EMAIL ?? "")
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
+
 function publicClient() {
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
 }
 
-async function assertAdmin(supabase: any, userId: string) {
+async function assertAdmin(supabase: any, userId: string, claims?: { email?: string | null }) {
   const { data, error } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
     .eq("role", "admin")
     .maybeSingle();
+
   if (error) throw new Error(error.message);
-  if (!data) throw new Error("Forbidden: admin role required");
+
+  const normalizedEmail = claims?.email?.trim().toLowerCase();
+  const isConfiguredAdmin = !!normalizedEmail && configuredAdminEmails.includes(normalizedEmail);
+
+  if (data || isConfiguredAdmin) return;
+  throw new Error("Forbidden: admin role required");
 }
 
 // ---------- PUBLIC ----------
@@ -79,13 +88,17 @@ export const checkIsAdmin = createServerFn({ method: "GET" })
       .eq("user_id", context.userId)
       .eq("role", "admin")
       .maybeSingle();
-    return { isAdmin: !!data };
+
+    const normalizedEmail = context.claims?.email?.trim().toLowerCase();
+    const isConfiguredAdmin = !!normalizedEmail && configuredAdminEmails.includes(normalizedEmail);
+
+    return { isAdmin: !!data || isConfiguredAdmin };
   });
 
 export const adminListPosts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.claims);
     const { data, error } = await context.supabase
       .from("blog_posts")
       .select(POST_SELECT)
@@ -98,7 +111,7 @@ export const adminGetPost = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.claims);
     const { data: post, error } = await context.supabase
       .from("blog_posts")
       .select(POST_SELECT)
@@ -109,7 +122,12 @@ export const adminGetPost = createServerFn({ method: "GET" })
   });
 
 const postInputSchema = z.object({
-  slug: z.string().trim().min(1).max(200).regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, hyphens"),
+  slug: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200)
+    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, hyphens"),
   title_en: z.string().max(300).default(""),
   title_ne: z.string().max(300).default(""),
   excerpt_en: z.string().max(600).default(""),
@@ -131,13 +149,11 @@ export const adminCreatePost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => postInputSchema.parse(d))
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.claims);
     const payload = {
       ...data,
       author_id: context.userId,
-      published_at: data.published
-        ? data.published_at ?? new Date().toISOString()
-        : null,
+      published_at: data.published ? (data.published_at ?? new Date().toISOString()) : null,
     };
     const { data: post, error } = await context.supabase
       .from("blog_posts")
@@ -150,17 +166,13 @@ export const adminCreatePost = createServerFn({ method: "POST" })
 
 export const adminUpdatePost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
-    postInputSchema.extend({ id: z.string().uuid() }).parse(d),
-  )
+  .inputValidator((d: unknown) => postInputSchema.extend({ id: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.claims);
     const { id, ...rest } = data;
     const payload = {
       ...rest,
-      published_at: rest.published
-        ? rest.published_at ?? new Date().toISOString()
-        : null,
+      published_at: rest.published ? (rest.published_at ?? new Date().toISOString()) : null,
     };
     const { data: post, error } = await context.supabase
       .from("blog_posts")
@@ -176,7 +188,7 @@ export const adminDeletePost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.claims);
     const { error } = await context.supabase.from("blog_posts").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
