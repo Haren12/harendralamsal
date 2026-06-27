@@ -1,0 +1,1 @@
+Place harendra_portrait.png here
