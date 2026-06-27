@@ -48,7 +48,24 @@ async function assertAdmin(supabase: any, userId: string, claims?: { email?: str
   const normalizedEmail = getNormalizedEmail(claims);
   const isConfiguredAdmin = !!normalizedEmail && configuredAdminEmails.includes(normalizedEmail);
 
-  if (data || isConfiguredAdmin) return;
+  // If claims didn't include an email, attempt to fetch the user email from Supabase
+  let emailFromAuth: string | null = null;
+  if (!normalizedEmail) {
+    try {
+      const userRes = await supabase.auth.getUser();
+      // supabase.auth.getUser() returns { data: { user }, error }
+      // handle both client and server shapes
+      const maybeUser = (userRes as any)?.data?.user ?? (userRes as any)?.user ?? null;
+      emailFromAuth = maybeUser?.email?.trim().toLowerCase() ?? null;
+    } catch (e) {
+      // ignore and fallback to role check
+    }
+  }
+
+  const finalEmail = normalizedEmail ?? emailFromAuth;
+  const finalIsConfiguredAdmin = !!finalEmail && configuredAdminEmails.includes(finalEmail);
+
+  if (data || finalIsConfiguredAdmin) return;
   throw new Error("Forbidden: admin role required");
 }
 
