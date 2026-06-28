@@ -1,10 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Mail, MessageCircle, MapPin, Github, Facebook, Linkedin, Send } from "lucide-react";
+import {
+  Mail,
+  MessageCircle,
+  MapPin,
+  Github,
+  Facebook,
+  Linkedin,
+  Send,
+  Smartphone,
+} from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { sendContactLead } from "@/lib/contact.functions";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -34,45 +41,64 @@ const schema = z.object({
   message: z.string().trim().min(3, "Please write a message").max(2000),
 });
 
+type ContactForm = z.infer<typeof schema>;
+
+const contactEmail = "harendralamsal4140@gmail.com";
+const contactPhone = "+9779823587535";
+const whatsappPhone = "9779823587535";
+
+function fallbackMessage(data: ContactForm) {
+  return [
+    "New project inquiry",
+    "",
+    `Name: ${data.name}`,
+    `Email: ${data.email}`,
+    data.phone ? `Phone/WhatsApp: ${data.phone}` : null,
+    `Subject: ${data.subject}`,
+    "",
+    data.message,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function fallbackLinks(data: ContactForm) {
+  const message = fallbackMessage(data);
+  return {
+    whatsapp: `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`,
+    email: `mailto:${contactEmail}?subject=${encodeURIComponent(`Project inquiry: ${data.subject}`)}&body=${encodeURIComponent(message)}`,
+    sms: `sms:${contactPhone}?body=${encodeURIComponent(message)}`,
+  };
+}
+
 function ContactPage() {
   const { lang } = useI18n();
   const ne = lang === "ne";
-  const sendLead = useServerFn(sendContactLead);
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
-  const [sending, setSending] = useState(false);
+  const [fallback, setFallback] = useState<ContactForm | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
-    setSending(true);
 
-    try {
-      const result = await sendLead({ data: parsed.data });
-      const sent = result.smsSent || result.emailSent || result.whatsappSent;
+    const links = fallbackLinks(parsed.data);
+    setFallback(parsed.data);
+    window.open(links.whatsapp, "_blank", "noopener,noreferrer");
+    toast.success(
+      ne
+        ? "WhatsApp खुल्दैछ। नखुलेमा तलको Email वा SMS विकल्प प्रयोग गर्नुहोस्।"
+        : "Opening WhatsApp. If it does not open, use the email or SMS option below.",
+    );
+  }
 
-      if (sent) {
-        toast.success(
-          ne
-            ? "सन्देश प्राप्त भयो! म छिट्टै जवाफ दिनेछु।"
-            : "Message received! I'll get back to you shortly.",
-        );
-        setForm({ name: "", email: "", phone: "", subject: "", message: "" });
-      } else {
-        toast.error(
-          ne
-            ? "Direct SMS/email service setup भएको छैन।"
-            : "Direct SMS/email service is not configured yet.",
-        );
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not send message");
-    } finally {
-      setSending(false);
-    }
+  function clearForm() {
+    setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+    setFallback(null);
+    toast.success(ne ? "फर्म खाली गरियो।" : "Form cleared.");
   }
 
   return (
@@ -152,68 +178,97 @@ function ContactPage() {
           </div>
         </aside>
 
-        <form onSubmit={onSubmit} className="surface-card space-y-4 p-6 md:p-8">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={ne ? "नाम" : "Name"}>
-              <input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                maxLength={80}
+        <div className="space-y-4">
+          <form onSubmit={onSubmit} className="surface-card space-y-4 p-6 md:p-8">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label={ne ? "नाम" : "Name"}>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  maxLength={80}
+                  required
+                  className="input"
+                />
+              </Field>
+              <Field label={ne ? "इमेल" : "Email"}>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  maxLength={160}
+                  required
+                  className="input"
+                />
+              </Field>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label={ne ? "फोन / WhatsApp" : "Phone / WhatsApp"}>
+                <input
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  maxLength={40}
+                  className="input"
+                />
+              </Field>
+              <Field label={ne ? "विषय" : "Subject"}>
+                <input
+                  value={form.subject}
+                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                  maxLength={120}
+                  required
+                  className="input"
+                />
+              </Field>
+            </div>
+            <Field label={ne ? "सन्देश" : "Message"}>
+              <textarea
+                value={form.message}
+                onChange={(e) => setForm({ ...form, message: e.target.value })}
+                rows={6}
+                maxLength={2000}
                 required
-                className="input"
+                className="input resize-y"
               />
             </Field>
-            <Field label={ne ? "इमेल" : "Email"}>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                maxLength={160}
-                required
-                className="input"
-              />
-            </Field>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={ne ? "फोन / WhatsApp" : "Phone / WhatsApp"}>
-              <input
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                maxLength={40}
-                className="input"
-              />
-            </Field>
-            <Field label={ne ? "विषय" : "Subject"}>
-              <input
-                value={form.subject}
-                onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                maxLength={120}
-                required
-                className="input"
-              />
-            </Field>
-          </div>
-          <Field label={ne ? "सन्देश" : "Message"}>
-            <textarea
-              value={form.message}
-              onChange={(e) => setForm({ ...form, message: e.target.value })}
-              rows={6}
-              maxLength={2000}
-              required
-              className="input resize-y"
-            />
-          </Field>
-          <button
-            type="submit"
-            disabled={sending}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02] disabled:opacity-60"
-          >
-            <span className={ne ? "font-nepali" : ""}>
-              {ne ? "सन्देश पठाउनुहोस्" : "Send message"}
-            </span>
-            <Send className="h-4 w-4" />
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02] disabled:opacity-60"
+            >
+              <span className={ne ? "font-nepali" : ""}>
+                {ne ? "WhatsApp बाट पठाउनुहोस्" : "Send via WhatsApp"}
+              </span>
+              <Send className="h-4 w-4" />
+            </button>
+          </form>
+
+          {fallback && (
+            <div className="surface-card border-accent/30 bg-accent/5 p-5">
+              <p className={cn("text-sm font-bold text-foreground", ne && "font-nepali")}>
+                {ne
+                  ? "WhatsApp नखुलेमा अर्को विकल्प छान्नुहोस्"
+                  : "If WhatsApp did not open, choose another option"}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <FallbackButton href={fallbackLinks(fallback).whatsapp} icon={MessageCircle}>
+                  WhatsApp
+                </FallbackButton>
+                <FallbackButton href={fallbackLinks(fallback).email} icon={Mail}>
+                  Email
+                </FallbackButton>
+                <FallbackButton href={fallbackLinks(fallback).sms} icon={Smartphone}>
+                  SMS
+                </FallbackButton>
+                <button
+                  type="button"
+                  onClick={clearForm}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {ne ? "फर्म खाली गर्नुहोस्" : "Clear form"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </section>
 
       <style>{`
@@ -233,6 +288,28 @@ function ContactPage() {
         }
       `}</style>
     </>
+  );
+}
+
+function FallbackButton({
+  href,
+  icon: Icon,
+  children,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target={href.startsWith("http") ? "_blank" : undefined}
+      rel={href.startsWith("http") ? "noreferrer" : undefined}
+      className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-[1.02]"
+    >
+      <Icon className="h-4 w-4" />
+      {children}
+    </a>
   );
 }
 

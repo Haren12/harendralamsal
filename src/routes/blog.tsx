@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { Search, UserPlus } from "lucide-react";
+import { Search } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { listPublishedPosts, listCategoriesPublic } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
@@ -49,7 +49,7 @@ function BlogIndex() {
   const postsQ = useQuery({ queryKey: ["publicPosts"], queryFn: () => listPosts() });
   const catsQ = useQuery({ queryKey: ["publicCats"], queryFn: () => listCats() });
 
-  const posts = postsQ.data ?? [];
+  const posts = useMemo(() => postsQ.data ?? [], [postsQ.data]);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -92,8 +92,8 @@ function BlogIndex() {
               : "Practical writing about the modern web, WordPress, SEO, and AI — in English and Nepali."}
           </p>
 
-          <div className="mt-8 flex max-w-3xl flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex flex-1 items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 shadow-[var(--shadow-card)]">
+          <div className="mt-8 max-w-3xl">
+            <div className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 shadow-[var(--shadow-card)]">
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
                 value={q}
@@ -105,13 +105,6 @@ function BlogIndex() {
                 )}
               />
             </div>
-            <Link
-              to="/auth"
-              search={{ mode: "signup" }}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-[1.02]"
-            >
-              <UserPlus className="h-4 w-4" /> Admin signup
-            </Link>
           </div>
         </div>
       </section>

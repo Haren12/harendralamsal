@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
@@ -21,6 +22,17 @@ const configuredAdminEmails = [
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean),
 ];
+
+type AppSupabaseClient = SupabaseClient<Database>;
+
+class HttpError extends Error {
+  statusCode: number;
+
+  constructor(statusCode: number, message: string) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
 
 function getNormalizedEmail(claims?: {
   email?: string | null;
@@ -54,7 +66,7 @@ async function publicReadClient() {
 
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    return supabaseAdmin as any;
+    return supabaseAdmin;
   } catch {
     return publicClient();
   }
@@ -66,27 +78,33 @@ async function getAdminLookupClient() {
 
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    return supabaseAdmin as any;
+    return supabaseAdmin;
   } catch {
     return null;
   }
 }
 
-async function getUserEmailFromAuth(supabase: any) {
+async function getUserEmailFromAuth(supabase: AppSupabaseClient) {
   try {
     const userRes = await supabase.auth.getUser();
-    const maybeUser = (userRes as any)?.data?.user ?? (userRes as any)?.user ?? null;
+    const maybeUser = userRes.data.user;
     return maybeUser?.email?.trim().toLowerCase() ?? null;
   } catch {
     return null;
   }
 }
 
-async function assertAdmin(supabase: any, userId: string, claims?: { email?: string | null }) {
+async function assertAdmin(
+  supabase: AppSupabaseClient,
+  userId: string,
+  claims?: { email?: string | null },
+) {
   const normalizedEmail = getNormalizedEmail(claims);
 
   const adminLookupClient = await getAdminLookupClient();
-  const roleSources = [adminLookupClient, supabase].filter(Boolean) as any[];
+  const roleSources: AppSupabaseClient[] = adminLookupClient
+    ? [adminLookupClient, supabase]
+    : [supabase];
 
   let roleData: { role?: string } | null = null;
   for (const roleSource of roleSources) {
@@ -109,7 +127,7 @@ async function assertAdmin(supabase: any, userId: string, claims?: { email?: str
   const finalIsConfiguredAdmin = !!finalEmail && configuredAdminEmails.includes(finalEmail);
 
   if (roleData || finalIsConfiguredAdmin) return;
-  throw new Error("Forbidden: admin role required");
+  throw new HttpError(403, "Forbidden: admin role required");
 }
 
 // ---------- PUBLIC ----------
@@ -171,7 +189,9 @@ export const checkIsAdmin = createServerFn({ method: "GET" })
     const isConfiguredAdmin = !!finalEmail && configuredAdminEmails.includes(finalEmail);
 
     const adminLookupClient = await getAdminLookupClient();
-    const roleSources = [adminLookupClient, context.supabase].filter(Boolean) as any[];
+    const roleSources: AppSupabaseClient[] = adminLookupClient
+      ? [adminLookupClient, context.supabase]
+      : [context.supabase];
 
     let hasRole = false;
     for (const roleSource of roleSources) {

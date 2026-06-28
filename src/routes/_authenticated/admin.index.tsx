@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Plus, Edit3, Trash2, LogOut, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { adminListPosts, adminDeletePost, checkIsAdmin } from "@/lib/blog.functions";
+import { adminListPosts, adminDeletePost } from "@/lib/blog.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
@@ -16,22 +16,12 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 function AdminPage() {
   const router = useRouter();
   const qc = useQueryClient();
-  const checkAdmin = useServerFn(checkIsAdmin);
   const listPosts = useServerFn(adminListPosts);
   const deletePost = useServerFn(adminDeletePost);
 
-  const roleQ = useQuery({
-    queryKey: ["isAdmin"],
-    queryFn: () => checkAdmin(),
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
-  });
   const postsQ = useQuery({
     queryKey: ["adminPosts"],
     queryFn: () => listPosts(),
-    enabled: roleQ.data?.isAdmin === true,
   });
 
   const del = useMutation({
@@ -40,60 +30,14 @@ function AdminPage() {
       toast.success("Post deleted");
       qc.invalidateQueries({ queryKey: ["adminPosts"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Delete failed"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
   });
 
-  async function signOut(mode: "signin" | "signup" = "signin") {
+  async function signOut() {
     await qc.cancelQueries();
     qc.clear();
     await supabase.auth.signOut();
-    router.navigate({ to: "/auth", search: { mode }, replace: true });
-  }
-
-  if (roleQ.isLoading) {
-    return <div className="container-page py-20 text-center text-muted-foreground">Loading…</div>;
-  }
-  if (!roleQ.data?.isAdmin) {
-    return (
-      <div className="container-page py-20 text-center">
-        <h1 className="text-2xl font-bold">Access denied</h1>
-        <p className="mt-2 text-muted-foreground">Your account does not have admin privileges.</p>
-        <div className="mx-auto mt-5 max-w-lg rounded-xl border border-border bg-card p-4 text-left text-sm">
-          {roleQ.isError ? (
-            <p className="text-destructive">
-              Admin check failed: {roleQ.error.message || "Please sign in again."}
-            </p>
-          ) : (
-            <>
-              <p>
-                <span className="font-semibold text-foreground">Signed in as:</span>{" "}
-                <span className="text-muted-foreground">{roleQ.data?.email ?? "unknown"}</span>
-              </p>
-              <p className="mt-2">
-                <span className="font-semibold text-foreground">Admin email:</span>{" "}
-                <span className="text-muted-foreground">
-                  {roleQ.data?.allowedEmails?.join(", ") ?? "not configured"}
-                </span>
-              </p>
-            </>
-          )}
-        </div>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => signOut()}
-            className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background"
-          >
-            Sign out
-          </button>
-          <button
-            onClick={() => signOut("signup")}
-            className="rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
-          >
-            Admin signup
-          </button>
-        </div>
-      </div>
-    );
+    router.navigate({ to: "/auth", replace: true });
   }
 
   return (

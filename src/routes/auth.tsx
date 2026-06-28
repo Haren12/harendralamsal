@@ -1,16 +1,29 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { checkIsAdmin } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
 
-type AuthMode = "signin" | "signup";
+type AuthSearch = {
+  message?: "registration-disabled";
+};
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>): { mode: AuthMode } => ({
-    mode: search.mode === "signup" ? "signup" : "signin",
+  validateSearch: (search: Record<string, unknown>): AuthSearch => ({
+    message: search.message === "registration-disabled" ? "registration-disabled" : undefined,
   }),
+  beforeLoad: ({ search }) => {
+    if ((search as Record<string, unknown>).mode === "signup") {
+      throw redirect({
+        to: "/auth",
+        search: { message: "registration-disabled" },
+        replace: true,
+      });
+    }
+  },
   head: () => ({
     meta: [{ title: "Sign in — Admin" }, { name: "robots", content: "noindex,nofollow" }],
   }),
@@ -25,24 +38,40 @@ const schema = z.object({
 function AuthPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
-  const [mode, setMode] = useState<AuthMode>(search.mode);
+  const checkAdmin = useServerFn(checkIsAdmin);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const registrationDisabled = search.message === "registration-disabled";
 
   useEffect(() => {
-    setMode(search.mode);
-  }, [search.mode]);
+    let active = true;
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/admin" });
+    if (registrationDisabled) {
+      toast.info("Public registration is disabled. Please contact the administrator.");
+    }
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!active || !data.session) return;
+      try {
+        const admin = await checkAdmin();
+        if (admin.isAdmin) {
+          navigate({ to: "/admin" });
+          return;
+        }
+      } catch {
+        // Treat a failed admin check like a non-admin session on the login screen.
+      }
+      await supabase.auth.signOut();
+      if (active) {
+        toast.error("Your account is not authorized for the admin dashboard.");
+      }
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") navigate({ to: "/admin" });
-    });
-    return () => sub.subscription.unsubscribe();
-  }, [navigate]);
+
+    return () => {
+      active = false;
+    };
+  }, [checkAdmin, navigate, registrationDisabled]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,43 +82,36 @@ function AuthPage() {
     }
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin + "/admin" },
-        });
-        if (error) throw error;
-        toast.success("Account created. You can now sign in.");
-        setMode("signin");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+
+      const admin = await checkAdmin();
+      if (!admin.isAdmin) {
+        await supabase.auth.signOut();
+        toast.error("Your account is not authorized for the admin dashboard.");
+        return;
       }
-    } catch (err: any) {
-      toast.error(err.message ?? "Authentication failed");
+
+      navigate({ to: "/admin" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Authentication failed");
     } finally {
       setBusy(false);
     }
   }
 
-  function switchMode() {
-    const nextMode: AuthMode = mode === "signin" ? "signup" : "signin";
-    navigate({ to: "/auth", search: { mode: nextMode }, replace: true });
-    setMode(nextMode);
-  }
-
   return (
     <section className="container-page flex min-h-[70vh] items-center justify-center py-16">
       <div className="surface-card w-full max-w-md p-8">
-        <h1 className="text-2xl font-black tracking-tight">
-          {mode === "signin" ? "Admin sign in" : "Create admin account"}
-        </h1>
+        <h1 className="text-2xl font-black tracking-tight">Admin sign in</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {mode === "signin"
-            ? "Sign in to manage blog posts."
-            : "First account becomes the site admin automatically."}
+          Sign in with an existing administrator account to manage blog posts.
         </p>
+        {registrationDisabled && (
+          <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm font-medium text-foreground">
+            Public registration is disabled. Please contact the administrator.
+          </div>
+        )}
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <label className="block">
@@ -126,18 +148,9 @@ function AuthPage() {
               "w-full rounded-full bg-foreground py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.01] disabled:opacity-60",
             )}
           >
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            {busy ? "Please wait…" : "Sign in"}
           </button>
         </form>
-
-        <button
-          onClick={switchMode}
-          className="mt-5 w-full rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {mode === "signin"
-            ? "Need an admin account? Sign up"
-            : "Already have an account? Sign in"}
-        </button>
 
         <Link
           to="/"

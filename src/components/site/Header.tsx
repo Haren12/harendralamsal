@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X, Languages } from "lucide-react";
+import { Lock, Menu, X, Languages } from "lucide-react";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -102,6 +102,13 @@ export function Header() {
         <div className="hidden items-center gap-3 md:flex">
           <LangSwitcher />
           <Link
+            to="/auth"
+            className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Lock className="h-3.5 w-3.5" />
+            Admin
+          </Link>
+          <Link
             to="/contact"
             className="inline-flex items-center justify-center rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.02]"
           >
@@ -133,6 +140,14 @@ export function Header() {
             ))}
             <div className="mt-2 flex items-center justify-between gap-3 px-1">
               <LangSwitcher />
+              <Link
+                to="/auth"
+                onClick={() => setOpen(false)}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-muted-foreground"
+              >
+                <Lock className="h-3.5 w-3.5" />
+                Admin
+              </Link>
               <Link
                 to="/contact"
                 onClick={() => setOpen(false)}
