@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Mail, MessageCircle, MapPin, Github, Twitter, Linkedin, Send } from "lucide-react";
+import { Mail, MessageCircle, MapPin, Github, Facebook, Linkedin, Send } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { sendContactLead } from "@/lib/contact.functions";
@@ -126,13 +126,23 @@ function ContactPage() {
             <div className="mt-3 flex gap-2">
               {[
                 { Icon: Github, href: "#", label: "GitHub" },
-                { Icon: Twitter, href: "#", label: "Twitter" },
-                { Icon: Linkedin, href: "#", label: "LinkedIn" },
+                {
+                  Icon: Facebook,
+                  href: "https://www.facebook.com/harendra.lamsala",
+                  label: "Facebook",
+                },
+                {
+                  Icon: Linkedin,
+                  href: "https://www.linkedin.com/in/harendra-lamsal-728a6122b",
+                  label: "LinkedIn",
+                },
               ].map(({ Icon, href, label }) => (
                 <a
                   key={label}
                   href={href}
                   aria-label={label}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noreferrer" : undefined}
                   className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-card text-muted-foreground hover:border-accent/40 hover:text-accent"
                 >
                   <Icon className="h-4 w-4" />

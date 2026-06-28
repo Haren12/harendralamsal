@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Github, Twitter, Linkedin, Youtube, Mail } from "lucide-react";
+import { Github, Facebook, Linkedin, Youtube, Mail } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { postCategories } from "@/lib/content";
 import { cn } from "@/lib/utils";
@@ -85,8 +85,16 @@ export function Footer() {
           <div className="mt-4 flex gap-2">
             {[
               { Icon: Github, label: "GitHub", href: "#" },
-              { Icon: Twitter, label: "Twitter", href: "#" },
-              { Icon: Linkedin, label: "LinkedIn", href: "#" },
+              {
+                Icon: Facebook,
+                label: "Facebook",
+                href: "https://www.facebook.com/harendra.lamsala",
+              },
+              {
+                Icon: Linkedin,
+                label: "LinkedIn",
+                href: "https://www.linkedin.com/in/harendra-lamsal-728a6122b",
+              },
               { Icon: Youtube, label: "YouTube", href: "#" },
               { Icon: Mail, label: "Email", href: "mailto:harendralamsal4140@gmail.com" },
             ].map(({ Icon, label, href }) => (
@@ -94,6 +102,8 @@ export function Footer() {
                 key={label}
                 href={href}
                 aria-label={label}
+                target={href.startsWith("http") ? "_blank" : undefined}
+                rel={href.startsWith("http") ? "noreferrer" : undefined}
                 className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:text-accent"
               >
                 <Icon className="h-4 w-4" />
