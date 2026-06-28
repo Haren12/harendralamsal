@@ -61,6 +61,9 @@ async function publicReadClient() {
 }
 
 async function getAdminLookupClient() {
+  const { serviceRoleKey } = getServerSupabaseEnv();
+  if (!serviceRoleKey) return null;
+
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     return supabaseAdmin as any;
