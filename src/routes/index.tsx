@@ -72,14 +72,13 @@ function Hero() {
           <div className="relative mx-auto aspect-[4/5] w-full max-w-md">
             <div className="absolute -inset-4 rounded-[2rem] bg-[image:var(--gradient-accent)] opacity-25 blur-2xl" />
             <div className="glow-border tech-panel relative h-full w-full overflow-hidden rounded-[2rem] shadow-[var(--shadow-elevated)]">
-              <div className="absolute inset-0 bg-[image:var(--gradient-primary)] opacity-25" />
+              <div className="pointer-events-none absolute inset-0 -z-10 bg-[image:var(--gradient-primary)] opacity-25" />
               <img
                 src={"/harendra_portrait.png"}
                 alt="Harendra Lamsal portrait"
-                className="absolute inset-0 h-full w-full object-cover mix-blend-luminosity"
+                className="absolute inset-0 h-full w-full object-cover"
                 loading="eager"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent" />
               <div className="absolute left-5 top-5 rounded-full border border-accent/30 bg-background/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-accent backdrop-blur">
                 AI-ready builds
               </div>

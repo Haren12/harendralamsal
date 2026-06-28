@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Calendar,
@@ -12,6 +12,11 @@ import {
   Twitter,
   Facebook,
   Linkedin,
+  MessageCircle,
+  Send,
+  Mail,
+  LinkIcon,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -27,24 +32,173 @@ function getPostUrl(slug: string) {
   return `${SITE_ORIGIN}/blog/${slug}`;
 }
 
-async function sharePost(title: string, url: string) {
-  if (typeof navigator === "undefined") return;
+type SharePayload = {
+  title: string;
+  description: string;
+  url: string;
+};
 
-  if (navigator.share) {
-    try {
-      await navigator.share({ title, url });
-      return;
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-    }
+function getShareHref(kind: string, { title, description, url }: SharePayload) {
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(title);
+  const encodedText = encodeURIComponent(description || title);
+  const encodedEmailSubject = encodeURIComponent(title);
+  const encodedEmailBody = encodeURIComponent(`${description || title}\n\n${url}`);
+
+  switch (kind) {
+    case "facebook":
+      return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+    case "messenger":
+      return `fb-messenger://share/?link=${encodedUrl}`;
+    case "whatsapp":
+      return `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
+    case "x":
+      return `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
+    case "telegram":
+      return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+    case "linkedin":
+      return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+    case "email":
+      return `mailto:?subject=${encodedEmailSubject}&body=${encodedEmailBody}`;
+    default:
+      return url;
   }
+}
 
+async function copyShareLink(url: string) {
   try {
     await navigator.clipboard.writeText(url);
-    toast.success("Article link copied");
+    toast.success("Link copied successfully");
   } catch {
-    toast.error("Could not copy article link");
+    toast.error("Could not copy link");
   }
+}
+
+function SharePopup({
+  open,
+  payload,
+  onClose,
+}: {
+  open: boolean;
+  payload: SharePayload;
+  onClose: () => void;
+}) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [shouldRender, setShouldRender] = useState(open);
+  const [visible, setVisible] = useState(open);
+  const shareItems = [
+    { kind: "facebook", label: "Facebook", Icon: Facebook },
+    { kind: "messenger", label: "Messenger", Icon: MessageCircle },
+    { kind: "whatsapp", label: "WhatsApp", Icon: MessageCircle },
+    { kind: "x", label: "X", Icon: Twitter },
+    { kind: "telegram", label: "Telegram", Icon: Send },
+    { kind: "linkedin", label: "LinkedIn", Icon: Linkedin },
+    { kind: "email", label: "Email", Icon: Mail },
+  ];
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      const frame = window.requestAnimationFrame(() => setVisible(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    setVisible(false);
+    const timeout = window.setTimeout(() => setShouldRender(false), 180);
+    return () => window.clearTimeout(timeout);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || !shouldRender) return;
+
+    const timeout = window.setTimeout(() => closeButtonRef.current?.focus(), 80);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.clearTimeout(timeout);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onClose, open, shouldRender]);
+
+  if (!shouldRender) return null;
+
+  return (
+    <div
+      className={cn(
+        "fixed inset-0 z-50 grid place-items-end bg-background/70 p-4 backdrop-blur-md transition-opacity duration-200 sm:place-items-center",
+        visible ? "opacity-100" : "opacity-0",
+      )}
+      role="presentation"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-dialog-title"
+        className={cn(
+          "glow-border w-full max-w-md overflow-hidden rounded-2xl border border-border bg-popover/90 shadow-[var(--shadow-elevated)] backdrop-blur-2xl transition duration-200",
+          visible ? "translate-y-0 scale-100 opacity-100" : "translate-y-4 scale-95 opacity-0",
+        )}
+      >
+        <div className="flex items-start gap-4 border-b border-border bg-card/45 px-5 py-4">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent/15 text-accent shadow-[var(--shadow-glow)]">
+            <Share2 className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 id="share-dialog-title" className="text-base font-bold tracking-tight">
+              Share this article
+            </h2>
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{payload.title}</p>
+          </div>
+          <button
+            ref={closeButtonRef}
+            type="button"
+            aria-label="Close share options"
+            onClick={onClose}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-background/50 text-muted-foreground transition-colors hover:border-accent/40 hover:text-accent"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
+          {shareItems.map(({ kind, label, Icon }) => (
+            <a
+              key={kind}
+              href={getShareHref(kind, payload)}
+              target={kind === "email" ? undefined : "_blank"}
+              rel={kind === "email" ? undefined : "noreferrer"}
+              className="group flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card/55 px-3 py-4 text-center text-sm font-semibold text-foreground shadow-[var(--shadow-card)] backdrop-blur transition-all hover:-translate-y-0.5 hover:border-accent/45 hover:text-accent hover:shadow-[var(--shadow-glow)]"
+              onClick={onClose}
+            >
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-background/55 text-accent transition-transform group-hover:scale-105">
+                <Icon className="h-4 w-4" />
+              </span>
+              {label}
+            </a>
+          ))}
+          <button
+            type="button"
+            className="group flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card/55 px-3 py-4 text-center text-sm font-semibold text-foreground shadow-[var(--shadow-card)] backdrop-blur transition-all hover:-translate-y-0.5 hover:border-accent/45 hover:text-accent hover:shadow-[var(--shadow-glow)]"
+            onClick={() => {
+              copyShareLink(payload.url);
+              onClose();
+            }}
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-background/55 text-accent transition-transform group-hover:scale-105">
+              <LinkIcon className="h-4 w-4" />
+            </span>
+            Copy Link
+          </button>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 export const Route = createFileRoute("/blog/$slug")({
@@ -136,6 +290,7 @@ function PostPage() {
   const post = postQ.data;
   const { lang, t } = useI18n();
   const ne = lang === "ne";
+  const [sharePopupOpen, setSharePopupOpen] = useState(false);
 
   useEffect(() => {
     const key = `viewed-post:${slug}`;
@@ -165,7 +320,38 @@ function PostPage() {
 
   const showNe = ne && post.lang !== "en";
   const postTitle = showNe ? post.title_ne || post.title_en : post.title_en || post.title_ne;
+  const postDescription = showNe
+    ? post.excerpt_ne || post.excerpt_en
+    : post.excerpt_en || post.excerpt_ne;
   const postUrl = getPostUrl(post.slug);
+  const sharePayload = {
+    title: postTitle,
+    description: postDescription,
+    url: postUrl,
+  };
+  const openShare = async () => {
+    if (typeof navigator === "undefined") {
+      setSharePopupOpen(true);
+      return;
+    }
+
+    const nativeShareData = {
+      title: sharePayload.title,
+      text: sharePayload.description,
+      url: sharePayload.url,
+    };
+
+    if (navigator.share && (!navigator.canShare || navigator.canShare(nativeShareData))) {
+      try {
+        await navigator.share(nativeShareData);
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
+    }
+
+    setSharePopupOpen(true);
+  };
   const shareLinks = [
     {
       Icon: Twitter,
@@ -271,7 +457,7 @@ function PostPage() {
                 type="button"
                 aria-label="Share article"
                 title="Share article"
-                onClick={() => sharePost(postTitle, postUrl)}
+                onClick={openShare}
                 className="grid h-8 w-8 place-items-center rounded-full border border-border bg-card/70 text-muted-foreground transition-all hover:border-accent/40 hover:text-accent hover:shadow-[var(--shadow-glow)]"
               >
                 <Share2 className="h-3.5 w-3.5" />
@@ -362,6 +548,12 @@ function PostPage() {
           </div>
         </section>
       )}
+
+      <SharePopup
+        open={sharePopupOpen}
+        payload={sharePayload}
+        onClose={() => setSharePopupOpen(false)}
+      />
     </>
   );
 }
