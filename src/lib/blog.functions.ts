@@ -34,6 +34,8 @@ function getServerSupabaseEnv() {
     url: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
     publishableKey:
       process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    serviceRoleKey:
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
   };
 }
 
@@ -42,6 +44,18 @@ function publicClient() {
   return createClient<Database>(url!, publishableKey!, {
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
   });
+}
+
+async function publicReadClient() {
+  const { serviceRoleKey } = getServerSupabaseEnv();
+  if (!serviceRoleKey) return publicClient();
+
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    return supabaseAdmin as any;
+  } catch {
+    return publicClient();
+  }
 }
 
 async function getAdminLookupClient() {
@@ -100,7 +114,7 @@ async function assertAdmin(supabase: any, userId: string, claims?: { email?: str
 // ---------- PUBLIC ----------
 
 export const listPublishedPosts = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = publicClient();
+  const supabase = await publicReadClient();
   const { data, error } = await supabase
     .from("blog_posts")
     .select(POST_SELECT)
@@ -113,7 +127,7 @@ export const listPublishedPosts = createServerFn({ method: "GET" }).handler(asyn
 export const getPublishedPost = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(200) }).parse(d))
   .handler(async ({ data }) => {
-    const supabase = publicClient();
+    const supabase = await publicReadClient();
     const { data: post, error } = await supabase
       .from("blog_posts")
       .select(POST_SELECT)

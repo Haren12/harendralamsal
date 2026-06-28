@@ -4,7 +4,6 @@ import { Menu, X, Languages } from "lucide-react";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-
 const navItems = [
   { to: "/about", key: "nav.about" },
   { to: "/services", key: "nav.services" },
@@ -56,7 +55,11 @@ export function Header() {
       <div className="container-page grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3.5 md:flex md:justify-between">
         <Link to="/" className="group flex min-w-0 items-center gap-2.5">
           <span className="grid h-9 w-9 shrink-0 overflow-hidden rounded-xl bg-[image:var(--gradient-primary)] shadow-[var(--shadow-glow)] ring-1 ring-border">
-            <img src={"/harendra_portrait.png"} alt="Harendra Lamsal" className="h-full w-full object-cover" />
+            <img
+              src={"/harendra_portrait.png"}
+              alt="Harendra Lamsal"
+              className="h-full w-full object-cover"
+            />
           </span>
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="truncate text-[15px] font-bold tracking-tight text-foreground">

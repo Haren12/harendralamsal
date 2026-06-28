@@ -12,10 +12,7 @@ export const Route = createFileRoute("/auth")({
     mode: search.mode === "signup" ? "signup" : "signin",
   }),
   head: () => ({
-    meta: [
-      { title: "Sign in — Admin" },
-      { name: "robots", content: "noindex,nofollow" },
-    ],
+    meta: [{ title: "Sign in — Admin" }, { name: "robots", content: "noindex,nofollow" }],
   }),
   component: AuthPage,
 });
@@ -96,24 +93,38 @@ function AuthPage() {
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Email</span>
+            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Email
+            </span>
             <input
-              type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              required maxLength={160}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              maxLength={160}
               className="input w-full"
             />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</span>
+            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Password
+            </span>
             <input
-              type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              required minLength={6} maxLength={72}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              maxLength={72}
               className="input w-full"
             />
           </label>
           <button
-            type="submit" disabled={busy}
-            className={cn("w-full rounded-full bg-foreground py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.01] disabled:opacity-60")}
+            type="submit"
+            disabled={busy}
+            className={cn(
+              "w-full rounded-full bg-foreground py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.01] disabled:opacity-60",
+            )}
           >
             {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
           </button>
@@ -123,10 +134,15 @@ function AuthPage() {
           onClick={switchMode}
           className="mt-5 w-full rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
-          {mode === "signin" ? "Need an admin account? Sign up" : "Already have an account? Sign in"}
+          {mode === "signin"
+            ? "Need an admin account? Sign up"
+            : "Already have an account? Sign in"}
         </button>
 
-        <Link to="/" className="mt-6 block text-center text-xs text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="mt-6 block text-center text-xs text-muted-foreground hover:text-foreground"
+        >
           ← Back to site
         </Link>
       </div>

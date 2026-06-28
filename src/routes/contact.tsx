@@ -10,7 +10,11 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact — Harendra Lamsal" },
-      { name: "description", content: "Get in touch about a web project, consulting, or just to say hi. Based in Nepal, available worldwide." },
+      {
+        name: "description",
+        content:
+          "Get in touch about a web project, consulting, or just to say hi. Based in Nepal, available worldwide.",
+      },
       { property: "og:title", content: "Contact — Harendra Lamsal" },
       { property: "og:description", content: "Get in touch about a project or consulting." },
       { property: "og:url", content: "/contact" },
@@ -42,7 +46,11 @@ function ContactPage() {
     }
     setSending(true);
     setTimeout(() => {
-      toast.success(ne ? "सन्देश प्राप्त भयो! म छिट्टै जवाफ दिनेछु।" : "Message received! I'll get back to you shortly.");
+      toast.success(
+        ne
+          ? "सन्देश प्राप्त भयो! म छिट्टै जवाफ दिनेछु।"
+          : "Message received! I'll get back to you shortly.",
+      );
       setForm({ name: "", email: "", subject: "", message: "" });
       setSending(false);
     }, 700);
@@ -55,18 +63,34 @@ function ContactPage() {
           <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-6 bg-accent" /> {ne ? "सम्पर्क" : "Contact"}
           </p>
-          <h1 className={cn("mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl text-balance", ne && "font-nepali")}>
+          <h1
+            className={cn(
+              "mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl text-balance",
+              ne && "font-nepali",
+            )}
+          >
             {ne ? "कुरा गरौं।" : "Let's talk."}
           </h1>
-          <p className={cn("mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground", ne && "font-nepali")}>
-            {ne ? "परियोजना, परामर्श वा केवल नमस्कारका लागि — म २४ घण्टा भित्र जवाफ दिन्छु।" : "For projects, consulting, or just to say hi — I reply within 24 hours."}
+          <p
+            className={cn(
+              "mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground",
+              ne && "font-nepali",
+            )}
+          >
+            {ne
+              ? "परियोजना, परामर्श वा केवल नमस्कारका लागि — म २४ घण्टा भित्र जवाफ दिन्छु।"
+              : "For projects, consulting, or just to say hi — I reply within 24 hours."}
           </p>
         </div>
       </section>
 
       <section className="container-page grid gap-10 py-12 md:grid-cols-[1fr_1.4fr] md:py-16">
         <aside className="space-y-4">
-          <InfoCard icon={Mail} title={ne ? "इमेल" : "Email"} href="mailto:harendralamsal4140@gmail.com">
+          <InfoCard
+            icon={Mail}
+            title={ne ? "इमेल" : "Email"}
+            href="mailto:harendralamsal4140@gmail.com"
+          >
             harendralamsal4140@gmail.com
           </InfoCard>
           <InfoCard icon={MessageCircle} title="WhatsApp" href="https://wa.me/9779823587535" accent>
@@ -77,7 +101,9 @@ function ContactPage() {
           </InfoCard>
 
           <div className="surface-card p-5">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{ne ? "फलो गर्नुहोस्" : "Follow"}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {ne ? "फलो गर्नुहोस्" : "Follow"}
+            </p>
             <div className="mt-3 flex gap-2">
               {[
                 { Icon: Github, href: "#", label: "GitHub" },
@@ -143,7 +169,9 @@ function ContactPage() {
             disabled={sending}
             className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02] disabled:opacity-60"
           >
-            <span className={ne ? "font-nepali" : ""}>{ne ? "सन्देश पठाउनुहोस्" : "Send message"}</span>
+            <span className={ne ? "font-nepali" : ""}>
+              {ne ? "सन्देश पठाउनुहोस्" : "Send message"}
+            </span>
             <Send className="h-4 w-4" />
           </button>
         </form>
@@ -173,7 +201,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   const { lang } = useI18n();
   return (
     <label className="block">
-      <span className={cn("mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground", lang === "ne" && "font-nepali")}>
+      <span
+        className={cn(
+          "mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground",
+          lang === "ne" && "font-nepali",
+        )}
+      >
         {label}
       </span>
       {children}
@@ -196,7 +229,12 @@ function InfoCard({
 }) {
   const inner = (
     <>
-      <div className={cn("grid h-10 w-10 place-items-center rounded-xl", accent ? "bg-accent text-accent-foreground" : "bg-primary/10 text-primary")}>
+      <div
+        className={cn(
+          "grid h-10 w-10 place-items-center rounded-xl",
+          accent ? "bg-accent text-accent-foreground" : "bg-primary/10 text-primary",
+        )}
+      >
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0">

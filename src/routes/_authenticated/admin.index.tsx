@@ -8,10 +8,7 @@ import { adminListPosts, adminDeletePost, checkIsAdmin } from "@/lib/blog.functi
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
-    meta: [
-      { title: "Admin — Blog Posts" },
-      { name: "robots", content: "noindex,nofollow" },
-    ],
+    meta: [{ title: "Admin — Blog Posts" }, { name: "robots", content: "noindex,nofollow" }],
   }),
   component: AdminPage,
 });
@@ -62,8 +59,18 @@ function AdminPage() {
         <h1 className="text-2xl font-bold">Access denied</h1>
         <p className="mt-2 text-muted-foreground">Your account does not have admin privileges.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button onClick={() => signOut()} className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background">Sign out</button>
-          <button onClick={() => signOut("signup")} className="rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-muted-foreground hover:text-foreground">Admin signup</button>
+          <button
+            onClick={() => signOut()}
+            className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background"
+          >
+            Sign out
+          </button>
+          <button
+            onClick={() => signOut("signup")}
+            className="rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+          >
+            Admin signup
+          </button>
         </div>
       </div>
     );
@@ -75,8 +82,8 @@ function AdminPage() {
         <div>
           <h1 className="text-3xl font-black tracking-tight">Blog admin</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {postsQ.data?.length ?? 0} posts ·{" "}
-            {postsQ.data?.filter((p) => p.published).length ?? 0} published
+            {postsQ.data?.length ?? 0} posts · {postsQ.data?.filter((p) => p.published).length ?? 0}{" "}
+            published
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -117,7 +124,9 @@ function AdminPage() {
               {postsQ.data?.map((p) => (
                 <tr key={p.id} className="border-t border-border">
                   <td className="px-4 py-3">
-                    <div className="font-semibold text-foreground">{p.title_en || p.title_ne || "(untitled)"}</div>
+                    <div className="font-semibold text-foreground">
+                      {p.title_en || p.title_ne || "(untitled)"}
+                    </div>
                     <div className="text-xs text-muted-foreground">/{p.slug}</div>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{p.category?.name_en ?? "—"}</td>

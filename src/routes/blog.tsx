@@ -11,9 +11,16 @@ export const Route = createFileRoute("/blog")({
   head: () => ({
     meta: [
       { title: "Blog — Web Development, WordPress, SEO & AI | Harendra Lamsal" },
-      { name: "description", content: "Practical articles on web development, WordPress, SEO, AI tools, freelancing, and more — in English and Nepali." },
+      {
+        name: "description",
+        content:
+          "Practical articles on web development, WordPress, SEO, AI tools, freelancing, and more — in English and Nepali.",
+      },
       { property: "og:title", content: "Blog — Harendra Lamsal" },
-      { property: "og:description", content: "Practical articles in English and Nepali on the modern web." },
+      {
+        property: "og:description",
+        content: "Practical articles in English and Nepali on the modern web.",
+      },
       { property: "og:url", content: "/blog" },
     ],
     links: [{ rel: "canonical", href: "/blog" }],
@@ -57,11 +64,23 @@ function BlogIndex() {
           <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-6 bg-accent" /> {ne ? "ब्लग" : "Blog"}
           </p>
-          <h1 className={cn("mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl text-balance", ne && "font-nepali")}>
+          <h1
+            className={cn(
+              "mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl text-balance",
+              ne && "font-nepali",
+            )}
+          >
             {ne ? "लेखहरू, ट्युटोरियल र विचारहरू।" : "Articles, tutorials & thoughts."}
           </h1>
-          <p className={cn("mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground", ne && "font-nepali")}>
-            {ne ? "वेब, WordPress, SEO र AI को बारेमा व्यावहारिक लेखन — अंग्रेजी र नेपाली दुवैमा।" : "Practical writing about the modern web, WordPress, SEO, and AI — in English and Nepali."}
+          <p
+            className={cn(
+              "mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground",
+              ne && "font-nepali",
+            )}
+          >
+            {ne
+              ? "वेब, WordPress, SEO र AI को बारेमा व्यावहारिक लेखन — अंग्रेजी र नेपाली दुवैमा।"
+              : "Practical writing about the modern web, WordPress, SEO, and AI — in English and Nepali."}
           </p>
 
           <div className="mt-8 flex max-w-3xl flex-col gap-3 sm:flex-row sm:items-center">
@@ -71,7 +90,10 @@ function BlogIndex() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder={t("common.search")}
-                className={cn("w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground", ne && "font-nepali")}
+                className={cn(
+                  "w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground",
+                  ne && "font-nepali",
+                )}
               />
             </div>
             <Link
@@ -116,7 +138,12 @@ function BlogIndex() {
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                     {p.cover_image_url ? (
-                      <img src={p.cover_image_url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <img
+                        src={p.cover_image_url}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
                     ) : (
                       <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-70" />
                     )}
@@ -127,15 +154,35 @@ function BlogIndex() {
                     )}
                   </div>
                   <div className="p-5">
-                    <h3 className={cn("text-base font-bold leading-snug tracking-tight group-hover:text-accent", showNe && "font-nepali")}>
+                    <h3
+                      className={cn(
+                        "text-base font-bold leading-snug tracking-tight group-hover:text-accent",
+                        showNe && "font-nepali",
+                      )}
+                    >
                       {showNe ? p.title_ne || p.title_en : p.title_en || p.title_ne}
                     </h3>
-                    <p className={cn("mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground", showNe && "font-nepali")}>
+                    <p
+                      className={cn(
+                        "mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground",
+                        showNe && "font-nepali",
+                      )}
+                    >
                       {showNe ? p.excerpt_ne || p.excerpt_en : p.excerpt_en || p.excerpt_ne}
                     </p>
                     <div className="mt-4 flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
-                      <span>{p.published_at ? new Date(p.published_at).toLocaleDateString(ne ? "ne-NP" : "en-US", { month: "short", day: "numeric", year: "numeric" }) : ""}</span>
-                      <span>{p.reading_minutes} {t("common.minRead")}</span>
+                      <span>
+                        {p.published_at
+                          ? new Date(p.published_at).toLocaleDateString(ne ? "ne-NP" : "en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : ""}
+                      </span>
+                      <span>
+                        {p.reading_minutes} {t("common.minRead")}
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -148,7 +195,15 @@ function BlogIndex() {
   );
 }
 
-function Pill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function Pill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}
