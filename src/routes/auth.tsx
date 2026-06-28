@@ -101,8 +101,11 @@ function AuthPage() {
   }
 
   return (
-    <section className="container-page flex min-h-[70vh] items-center justify-center py-16">
-      <div className="surface-card w-full max-w-md p-8">
+    <section className="hero-bg flex min-h-[70vh] items-center justify-center px-5 py-16">
+      <div className="surface-card glow-border w-full max-w-md p-8">
+        <div className="mb-5 inline-flex rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-accent">
+          Secure console
+        </div>
         <h1 className="text-2xl font-black tracking-tight">Admin sign in</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Sign in with an existing administrator account to manage blog posts.
@@ -145,7 +148,7 @@ function AuthPage() {
             type="submit"
             disabled={busy}
             className={cn(
-              "w-full rounded-full bg-foreground py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.01] disabled:opacity-60",
+              "tech-button w-full rounded-full py-3 text-sm font-semibold disabled:opacity-60",
             )}
           >
             {busy ? "Please wait…" : "Sign in"}
@@ -164,7 +167,9 @@ function AuthPage() {
         .input {
           border-radius: 0.625rem;
           border: 1px solid var(--color-border);
-          background: var(--color-background);
+          background: color-mix(in oklab, var(--color-card) 76%, transparent);
+          color: var(--color-foreground);
+          backdrop-filter: blur(16px);
           padding: 0.7rem 0.9rem;
           font-size: 0.9rem;
           outline: none;

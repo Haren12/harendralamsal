@@ -54,6 +54,14 @@ function listToText(items?: string[] | null) {
   return (items ?? []).join("\n");
 }
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function getPostLang(value: string): FormState["lang"] {
+  return value === "ne" || value === "both" ? value : "en";
+}
+
 const empty: FormState = {
   slug: "",
   title_en: "",
@@ -130,7 +138,10 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
         body_ne: form.body_ne,
         cover_image_url: form.cover_image_url || null,
         category_id: form.category_id || null,
-        tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+        tags: form.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
         lang: form.lang,
         reading_minutes: form.reading_minutes,
         seo_title: form.seo_title || null,
@@ -151,7 +162,7 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
       toast.success(existing ? "Post updated" : "Post created");
       navigate({ to: "/admin" });
     },
-    onError: (e: any) => toast.error(e.message ?? "Save failed"),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, "Save failed")),
   });
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -166,7 +177,8 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("blog-images").upload(path, file, {
-        cacheControl: "31536000", upsert: false,
+        cacheControl: "31536000",
+        upsert: false,
       });
       if (upErr) throw upErr;
       const { data: signed, error: sErr } = await supabase.storage
@@ -175,8 +187,8 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
       if (sErr) throw sErr;
       setForm((f) => ({ ...f, cover_image_url: signed.signedUrl }));
       toast.success("Image uploaded");
-    } catch (err: any) {
-      toast.error(err.message ?? "Upload failed");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Upload failed"));
     } finally {
       setUploading(false);
     }
@@ -184,7 +196,10 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
 
   return (
     <form
-      onSubmit={(e) => { e.preventDefault(); save.mutate(); }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        save.mutate();
+      }}
       className="grid gap-8 lg:grid-cols-[1fr_320px]"
     >
       <div className="space-y-5">
@@ -192,7 +207,10 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
           <div className="flex gap-2">
             <input
               value={form.slug}
-              onChange={(e) => { setAutoSlug(false); setForm({ ...form, slug: slugify(e.target.value) }); }}
+              onChange={(e) => {
+                setAutoSlug(false);
+                setForm({ ...form, slug: slugify(e.target.value) });
+              }}
               required
               className="input flex-1"
               placeholder="my-post-slug"
@@ -202,33 +220,61 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
         </Field>
 
         <Field label="Title (English) *">
-          <input value={form.title_en} onChange={(e) => setForm({ ...form, title_en: e.target.value })}
-            required maxLength={300} className="input w-full" />
+          <input
+            value={form.title_en}
+            onChange={(e) => setForm({ ...form, title_en: e.target.value })}
+            required
+            maxLength={300}
+            className="input w-full"
+          />
         </Field>
 
         <Field label="Title (Nepali)">
-          <input value={form.title_ne} onChange={(e) => setForm({ ...form, title_ne: e.target.value })}
-            maxLength={300} className="input w-full font-nepali" />
+          <input
+            value={form.title_ne}
+            onChange={(e) => setForm({ ...form, title_ne: e.target.value })}
+            maxLength={300}
+            className="input w-full font-nepali"
+          />
         </Field>
 
         <Field label="Excerpt (English)">
-          <textarea value={form.excerpt_en} onChange={(e) => setForm({ ...form, excerpt_en: e.target.value })}
-            rows={2} maxLength={600} className="input w-full" />
+          <textarea
+            value={form.excerpt_en}
+            onChange={(e) => setForm({ ...form, excerpt_en: e.target.value })}
+            rows={2}
+            maxLength={600}
+            className="input w-full"
+          />
         </Field>
 
         <Field label="Excerpt (Nepali)">
-          <textarea value={form.excerpt_ne} onChange={(e) => setForm({ ...form, excerpt_ne: e.target.value })}
-            rows={2} maxLength={600} className="input w-full font-nepali" />
+          <textarea
+            value={form.excerpt_ne}
+            onChange={(e) => setForm({ ...form, excerpt_ne: e.target.value })}
+            rows={2}
+            maxLength={600}
+            className="input w-full font-nepali"
+          />
         </Field>
 
         <Field label="Body (English)">
-          <textarea value={form.body_en} onChange={(e) => setForm({ ...form, body_en: e.target.value })}
-            rows={14} className="input w-full font-mono text-sm" placeholder="Markdown / plain text supported" />
+          <textarea
+            value={form.body_en}
+            onChange={(e) => setForm({ ...form, body_en: e.target.value })}
+            rows={14}
+            className="input w-full font-mono text-sm"
+            placeholder="Markdown / plain text supported"
+          />
         </Field>
 
         <Field label="Body (Nepali)">
-          <textarea value={form.body_ne} onChange={(e) => setForm({ ...form, body_ne: e.target.value })}
-            rows={14} className="input w-full font-nepali" />
+          <textarea
+            value={form.body_ne}
+            onChange={(e) => setForm({ ...form, body_ne: e.target.value })}
+            rows={14}
+            className="input w-full font-nepali"
+          />
         </Field>
 
         <section className="seo-panel overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
@@ -238,7 +284,9 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
             </div>
             <div>
               <p className="text-sm font-black">SEO & content planning</p>
-              <p className="text-xs text-primary-foreground/75">Meta data, keywords, and reference links for this post.</p>
+              <p className="text-xs text-primary-foreground/75">
+                Meta data, keywords, and reference links for this post.
+              </p>
             </div>
           </div>
 
@@ -315,17 +363,28 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
         <div className="admin-card p-5">
           <PanelTitle icon={FileText} label="Publish" />
           <label className="mt-3 flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.published}
-              onChange={(e) => setForm({ ...form, published: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={form.published}
+              onChange={(e) => setForm({ ...form, published: e.target.checked })}
+            />
             Published
           </label>
           <Field label="Publish date" className="mt-4">
-            <input type="datetime-local" value={form.published_at}
+            <input
+              type="datetime-local"
+              value={form.published_at}
               onChange={(e) => setForm({ ...form, published_at: e.target.value })}
-              className="input w-full" />
+              className="input w-full"
+            />
           </Field>
-          <button type="submit" disabled={save.isPending || uploading}
-            className={cn("mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[image:var(--gradient-accent)] py-2.5 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-glow)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] disabled:opacity-60")}>
+          <button
+            type="submit"
+            disabled={save.isPending || uploading}
+            className={cn(
+              "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[image:var(--gradient-accent)] py-2.5 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-glow)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] disabled:opacity-60",
+            )}
+          >
             <Save className="h-4 w-4" />
             {save.isPending ? "Saving…" : existing ? "Update post" : "Create post"}
           </button>
@@ -335,9 +394,16 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
           <PanelTitle icon={Upload} label="Featured image" />
           {form.cover_image_url ? (
             <div className="mt-3 space-y-2">
-              <img src={form.cover_image_url} alt="" className="aspect-[16/10] w-full rounded-lg object-cover" />
-              <button type="button" onClick={() => setForm({ ...form, cover_image_url: null })}
-                className="inline-flex items-center gap-1 text-xs text-destructive hover:underline">
+              <img
+                src={form.cover_image_url}
+                alt=""
+                className="aspect-[16/10] w-full rounded-lg object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, cover_image_url: null })}
+                className="inline-flex items-center gap-1 text-xs text-destructive hover:underline"
+              >
                 <X className="h-3 w-3" /> Remove
               </button>
             </div>
@@ -345,7 +411,13 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
             <label className="mt-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-background/50 p-6 text-center text-xs text-muted-foreground transition-all hover:border-accent hover:bg-accent/10 hover:text-foreground">
               <Upload className="h-5 w-5" />
               {uploading ? "Uploading…" : "Click to upload (max 5MB)"}
-              <input type="file" accept="image/*" onChange={onFile} className="hidden" disabled={uploading} />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={onFile}
+                className="hidden"
+                disabled={uploading}
+              />
             </label>
           )}
         </div>
@@ -353,30 +425,47 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
         <div className="admin-card p-5">
           <PanelTitle icon={LinkIcon} label="Post settings" />
           <Field label="Category">
-            <select value={form.category_id ?? ""} onChange={(e) => setForm({ ...form, category_id: e.target.value || null })}
-              className="input w-full">
+            <select
+              value={form.category_id ?? ""}
+              onChange={(e) => setForm({ ...form, category_id: e.target.value || null })}
+              className="input w-full"
+            >
               <option value="">— None —</option>
               {catsQ.data?.map((c) => (
-                <option key={c.id} value={c.id}>{c.name_en}</option>
+                <option key={c.id} value={c.id}>
+                  {c.name_en}
+                </option>
               ))}
             </select>
           </Field>
           <Field label="Language" className="mt-4">
-            <select value={form.lang} onChange={(e) => setForm({ ...form, lang: e.target.value as any })}
-              className="input w-full">
+            <select
+              value={form.lang}
+              onChange={(e) => setForm({ ...form, lang: getPostLang(e.target.value) })}
+              className="input w-full"
+            >
               <option value="en">English</option>
               <option value="ne">Nepali</option>
               <option value="both">Both</option>
             </select>
           </Field>
           <Field label="Reading minutes" className="mt-4">
-            <input type="number" min={1} max={120} value={form.reading_minutes}
+            <input
+              type="number"
+              min={1}
+              max={120}
+              value={form.reading_minutes}
               onChange={(e) => setForm({ ...form, reading_minutes: parseInt(e.target.value) || 5 })}
-              className="input w-full" />
+              className="input w-full"
+            />
           </Field>
           <Field label="Tags (comma separated)" className="mt-4">
-            <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              placeholder="seo, wordpress, nepal" className="input w-full" />
+            <input
+              value={form.tags}
+              onChange={(e) => setForm({ ...form, tags: e.target.value })}
+              placeholder="seo, wordpress, nepal"
+              className="input w-full"
+            />
           </Field>
         </div>
       </aside>
@@ -421,10 +510,20 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
   );
 }
 
-function Field({ label, className, children }: { label: string; className?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  className,
+  children,
+}: {
+  label: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className={cn("block", className)}>
-      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
       {children}
     </label>
   );

@@ -4,18 +4,23 @@ import { useI18n } from "@/lib/i18n";
 import { postCategories } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
-
 export function Footer() {
   const { t, lang } = useI18n();
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-24 border-t border-border bg-surface">
+    <footer className="relative mt-24 overflow-hidden border-t border-border bg-surface/45">
+      <div className="pointer-events-none absolute inset-0 subtle-grid opacity-[0.08]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[image:var(--gradient-accent)] opacity-60" />
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 overflow-hidden rounded-xl bg-[image:var(--gradient-primary)] ring-1 ring-border">
-              <img src={"/harendra_portrait.png"} alt="Harendra Lamsal" className="h-full w-full object-cover" />
+            <span className="glow-border grid h-9 w-9 overflow-hidden rounded-xl bg-[image:var(--gradient-primary)] ring-1 ring-border">
+              <img
+                src={"/harendra_portrait.png"}
+                alt="Harendra Lamsal"
+                className="h-full w-full object-cover"
+              />
             </span>
             <span className="text-base font-bold tracking-tight">Harendra Lamsal</span>
           </div>
@@ -49,7 +54,7 @@ export function Footer() {
                 <Link
                   to={l.to}
                   className={cn(
-                    "text-muted-foreground transition-colors hover:text-foreground",
+                    "text-muted-foreground transition-colors hover:text-accent",
                     lang === "ne" && "font-nepali",
                   )}
                 >
@@ -69,7 +74,7 @@ export function Footer() {
               <li key={c}>
                 <Link
                   to="/blog"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-muted-foreground transition-colors hover:text-accent"
                 >
                   {c}
                 </Link>
@@ -104,15 +109,13 @@ export function Footer() {
                 aria-label={label}
                 target={href.startsWith("http") ? "_blank" : undefined}
                 rel={href.startsWith("http") ? "noreferrer" : undefined}
-                className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:text-accent"
+                className="grid h-9 w-9 place-items-center rounded-xl border border-border bg-card/70 text-muted-foreground shadow-[var(--shadow-card)] backdrop-blur transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:text-accent hover:shadow-[var(--shadow-glow)]"
               >
                 <Icon className="h-4 w-4" />
               </a>
             ))}
           </div>
-          <p className="mt-5 text-xs text-muted-foreground">
-            harendralamsal4140@gmail.com
-          </p>
+          <p className="mt-5 text-xs text-muted-foreground">harendralamsal4140@gmail.com</p>
         </div>
       </div>
 
@@ -123,7 +126,8 @@ export function Footer() {
           )}
         >
           <p>
-            © {year} Harendra Lamsal. <span className={lang === "ne" ? "font-nepali" : ""}>{t("footer.rights")}</span>
+            © {year} Harendra Lamsal.{" "}
+            <span className={lang === "ne" ? "font-nepali" : ""}>{t("footer.rights")}</span>
           </p>
           <p className="text-[11px] uppercase tracking-wider">
             <span className="text-accent">●</span> Available for projects

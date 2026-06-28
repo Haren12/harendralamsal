@@ -42,31 +42,36 @@ function AdminPage() {
 
   return (
     <section className="container-page py-10 md:py-14">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight">Blog admin</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {postsQ.data?.length ?? 0} posts · {postsQ.data?.filter((p) => p.published).length ?? 0}{" "}
-            published
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            to="/admin/new"
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background hover:scale-[1.02] transition-transform"
-          >
-            <Plus className="h-4 w-4" /> New post
-          </Link>
-          <button
-            onClick={() => signOut()}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="h-4 w-4" /> Sign out
-          </button>
+      <header className="tech-panel rounded-3xl p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
+              Command center
+            </p>
+            <h1 className="text-3xl font-black tracking-tight">Blog admin</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {postsQ.data?.length ?? 0} posts ·{" "}
+              {postsQ.data?.filter((p) => p.published).length ?? 0} published
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/admin/new"
+              className="tech-button inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold"
+            >
+              <Plus className="h-4 w-4" /> New post
+            </Link>
+            <button
+              onClick={() => signOut()}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2.5 text-sm font-semibold text-muted-foreground shadow-[var(--shadow-card)] backdrop-blur hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
+          </div>
         </div>
       </header>
 
-      <div className="mt-8 overflow-hidden rounded-xl border border-border bg-card">
+      <div className="surface-card mt-8 overflow-x-auto rounded-2xl">
         {postsQ.isLoading ? (
           <p className="p-8 text-center text-muted-foreground">Loading posts…</p>
         ) : postsQ.data?.length === 0 ? (
@@ -74,8 +79,8 @@ function AdminPage() {
             No posts yet. Click <b>New post</b> to create one.
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+          <table className="w-full min-w-[760px] text-sm">
+            <thead className="bg-muted/45 text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 text-left">Title</th>
                 <th className="px-4 py-3 text-left">Category</th>
@@ -87,7 +92,10 @@ function AdminPage() {
             </thead>
             <tbody>
               {postsQ.data?.map((p) => (
-                <tr key={p.id} className="border-t border-border">
+                <tr
+                  key={p.id}
+                  className="border-t border-border transition-colors hover:bg-muted/25"
+                >
                   <td className="px-4 py-3">
                     <div className="font-semibold text-foreground">
                       {p.title_en || p.title_ne || "(untitled)"}
@@ -107,7 +115,7 @@ function AdminPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs font-semibold">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/50 px-2.5 py-1 text-xs font-semibold">
                       <Eye className="h-3.5 w-3.5 text-accent" />
                       {p.views_count.toLocaleString()}
                     </span>
@@ -120,7 +128,7 @@ function AdminPage() {
                       <Link
                         to="/admin/edit/$id"
                         params={{ id: p.id }}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border hover:text-accent"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card/60 hover:border-accent/40 hover:text-accent"
                         aria-label="Edit"
                       >
                         <Edit3 className="h-3.5 w-3.5" />
@@ -131,7 +139,7 @@ function AdminPage() {
                             del.mutate(p.id);
                           }
                         }}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card/60 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                         aria-label="Delete"
                       >
                         <Trash2 className="h-3.5 w-3.5" />

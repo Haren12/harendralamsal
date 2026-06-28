@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { ArrowUpRight, Clock, Search } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { listPublishedPosts, listCategoriesPublic } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
@@ -65,6 +65,8 @@ function BlogIndex() {
       );
     });
   }, [q, catSlug, posts]);
+  const featuredPost = filtered[0];
+  const restPosts = featuredPost ? filtered.slice(1) : filtered;
 
   return (
     <>
@@ -93,7 +95,7 @@ function BlogIndex() {
           </p>
 
           <div className="mt-8 max-w-3xl">
-            <div className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 shadow-[var(--shadow-card)]">
+            <div className="flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-3 shadow-[var(--shadow-card)] backdrop-blur-xl">
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
                 value={q}
@@ -121,6 +123,8 @@ function BlogIndex() {
           ))}
         </div>
 
+        {featuredPost && <FeaturedArticle post={featuredPost} ne={ne} t={t} />}
+
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {postsQ.isLoading ? (
             <p className="col-span-full py-16 text-center text-muted-foreground">Loading…</p>
@@ -129,7 +133,7 @@ function BlogIndex() {
               {posts.length === 0 ? "No posts published yet." : "No articles match your search."}
             </p>
           ) : (
-            filtered.map((p) => {
+            restPosts.map((p) => {
               const showNe = ne && p.lang !== "en";
               return (
                 <Link
@@ -149,8 +153,9 @@ function BlogIndex() {
                     ) : (
                       <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-70" />
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     {p.category && (
-                      <div className="absolute left-3 top-3 rounded-full bg-background/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground backdrop-blur">
+                      <div className="absolute left-3 top-3 rounded-full border border-border bg-background/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground backdrop-blur">
                         {ne ? p.category.name_ne : p.category.name_en}
                       </div>
                     )}
@@ -182,7 +187,8 @@ function BlogIndex() {
                             })
                           : ""}
                       </span>
-                      <span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-1">
+                        <Clock className="h-3 w-3 text-accent" />
                         {p.reading_minutes} {t("common.minRead")}
                       </span>
                     </div>
@@ -194,6 +200,73 @@ function BlogIndex() {
         </div>
       </section>
     </>
+  );
+}
+
+function FeaturedArticle({
+  post,
+  ne,
+  t,
+}: {
+  post: NonNullable<Awaited<ReturnType<typeof listPublishedPosts>>>[number];
+  ne: boolean;
+  t: (key: Parameters<ReturnType<typeof useI18n>["t"]>[0]) => string;
+}) {
+  const showNe = ne && post.lang !== "en";
+  return (
+    <Link
+      to="/blog/$slug"
+      params={{ slug: post.slug }}
+      className="surface-card glow-border group mt-10 grid overflow-hidden md:grid-cols-[1.05fr_1fr]"
+    >
+      <div className="relative min-h-72 overflow-hidden bg-muted">
+        {post.cover_image_url ? (
+          <img
+            src={post.cover_image_url}
+            alt=""
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-75" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-tr from-background/85 via-background/15 to-accent/15" />
+      </div>
+      <div className="flex flex-col justify-center p-6 md:p-8">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
+          {ne ? "विशेष लेख" : "Featured transmission"}
+        </p>
+        <h2
+          className={cn(
+            "mt-4 text-2xl font-black leading-tight tracking-tight sm:text-3xl",
+            showNe && "font-nepali",
+          )}
+        >
+          {showNe ? post.title_ne || post.title_en : post.title_en || post.title_ne}
+        </h2>
+        <p
+          className={cn(
+            "mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground",
+            showNe && "font-nepali",
+          )}
+        >
+          {showNe ? post.excerpt_ne || post.excerpt_en : post.excerpt_en || post.excerpt_ne}
+        </p>
+        <div className="mt-5 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+          {post.category && (
+            <span className="rounded-full border border-accent/30 bg-accent/10 px-3 py-1 font-bold text-accent">
+              {ne ? post.category.name_ne : post.category.name_en}
+            </span>
+          )}
+          <span className="rounded-full border border-border bg-muted/50 px-3 py-1">
+            {post.reading_minutes} {t("common.minRead")}
+          </span>
+          <span className="inline-flex items-center gap-1 font-bold text-foreground">
+            {ne ? "पढ्नुहोस्" : "Read article"} <ArrowUpRight className="h-3.5 w-3.5" />
+          </span>
+        </div>
+      </div>
+    </Link>
   );
 }
 
@@ -210,10 +283,10 @@ function Pill({
     <button
       onClick={onClick}
       className={cn(
-        "rounded-full border px-4 py-2 text-xs font-semibold transition-colors",
+        "rounded-full border px-4 py-2 text-xs font-semibold shadow-[var(--shadow-card)] backdrop-blur transition-colors",
         active
-          ? "border-foreground bg-foreground text-background"
-          : "border-border bg-card text-muted-foreground hover:border-foreground/40 hover:text-foreground",
+          ? "border-accent/50 bg-accent text-accent-foreground shadow-[var(--shadow-glow)]"
+          : "border-border bg-card/70 text-muted-foreground hover:border-accent/40 hover:text-foreground",
       )}
     >
       {children}

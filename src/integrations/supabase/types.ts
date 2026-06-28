@@ -1,300 +1,292 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
+    PostgrestVersion: "14.5";
+  };
   public: {
     Tables: {
       blog_categories: {
         Row: {
-          created_at: string
-          id: string
-          name_en: string
-          name_ne: string
-          slug: string
-        }
+          created_at: string;
+          id: string;
+          name_en: string;
+          name_ne: string;
+          slug: string;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          name_en: string
-          name_ne: string
-          slug: string
-        }
+          created_at?: string;
+          id?: string;
+          name_en: string;
+          name_ne: string;
+          slug: string;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          name_en?: string
-          name_ne?: string
-          slug?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          name_en?: string;
+          name_ne?: string;
+          slug?: string;
+        };
+        Relationships: [];
+      };
       blog_posts: {
         Row: {
-          author_id: string | null
-          body_en: string
-          body_ne: string
-          category_id: string | null
-          cover_image_url: string | null
-          created_at: string
-          excerpt_en: string
-          excerpt_ne: string
-          external_references: string[]
-          focus_keyword: string | null
-          id: string
-          internal_link_suggestions: string[]
-          lang: string
-          published: boolean
-          published_at: string | null
-          reading_minutes: number
-          seo_description: string | null
-          seo_title: string | null
-          secondary_keywords: string[]
-          slug: string
-          tags: string[]
-          title_en: string
-          title_ne: string
-          updated_at: string
-          views_count: number
-        }
+          author_id: string | null;
+          body_en: string;
+          body_ne: string;
+          category_id: string | null;
+          cover_image_url: string | null;
+          created_at: string;
+          excerpt_en: string;
+          excerpt_ne: string;
+          external_references: string[];
+          focus_keyword: string | null;
+          id: string;
+          internal_link_suggestions: string[];
+          lang: string;
+          published: boolean;
+          published_at: string | null;
+          reading_minutes: number;
+          seo_description: string | null;
+          seo_title: string | null;
+          secondary_keywords: string[];
+          slug: string;
+          tags: string[];
+          title_en: string;
+          title_ne: string;
+          updated_at: string;
+          views_count: number;
+        };
         Insert: {
-          author_id?: string | null
-          body_en?: string
-          body_ne?: string
-          category_id?: string | null
-          cover_image_url?: string | null
-          created_at?: string
-          excerpt_en?: string
-          excerpt_ne?: string
-          external_references?: string[]
-          focus_keyword?: string | null
-          id?: string
-          internal_link_suggestions?: string[]
-          lang?: string
-          published?: boolean
-          published_at?: string | null
-          reading_minutes?: number
-          seo_description?: string | null
-          seo_title?: string | null
-          secondary_keywords?: string[]
-          slug: string
-          tags?: string[]
-          title_en?: string
-          title_ne?: string
-          updated_at?: string
-          views_count?: number
-        }
+          author_id?: string | null;
+          body_en?: string;
+          body_ne?: string;
+          category_id?: string | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          excerpt_en?: string;
+          excerpt_ne?: string;
+          external_references?: string[];
+          focus_keyword?: string | null;
+          id?: string;
+          internal_link_suggestions?: string[];
+          lang?: string;
+          published?: boolean;
+          published_at?: string | null;
+          reading_minutes?: number;
+          seo_description?: string | null;
+          seo_title?: string | null;
+          secondary_keywords?: string[];
+          slug: string;
+          tags?: string[];
+          title_en?: string;
+          title_ne?: string;
+          updated_at?: string;
+          views_count?: number;
+        };
         Update: {
-          author_id?: string | null
-          body_en?: string
-          body_ne?: string
-          category_id?: string | null
-          cover_image_url?: string | null
-          created_at?: string
-          excerpt_en?: string
-          excerpt_ne?: string
-          external_references?: string[]
-          focus_keyword?: string | null
-          id?: string
-          internal_link_suggestions?: string[]
-          lang?: string
-          published?: boolean
-          published_at?: string | null
-          reading_minutes?: number
-          seo_description?: string | null
-          seo_title?: string | null
-          secondary_keywords?: string[]
-          slug?: string
-          tags?: string[]
-          title_en?: string
-          title_ne?: string
-          updated_at?: string
-          views_count?: number
-        }
+          author_id?: string | null;
+          body_en?: string;
+          body_ne?: string;
+          category_id?: string | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          excerpt_en?: string;
+          excerpt_ne?: string;
+          external_references?: string[];
+          focus_keyword?: string | null;
+          id?: string;
+          internal_link_suggestions?: string[];
+          lang?: string;
+          published?: boolean;
+          published_at?: string | null;
+          reading_minutes?: number;
+          seo_description?: string | null;
+          seo_title?: string | null;
+          secondary_keywords?: string[];
+          slug?: string;
+          tags?: string[];
+          title_en?: string;
+          title_ne?: string;
+          updated_at?: string;
+          views_count?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "blog_posts_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "blog_categories"
-            referencedColumns: ["id"]
+            foreignKeyName: "blog_posts_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "blog_categories";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       user_roles: {
         Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
+          created_at: string;
+          id: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
+          created_at?: string;
+          id?: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-    }
+          created_at?: string;
+          id?: string;
+          role?: Database["public"]["Enums"]["app_role"];
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
       increment_blog_post_view: {
         Args: {
-          post_slug: string
-        }
-        Returns: number
-      }
+          post_slug: string;
+        };
+        Returns: number;
+      };
       has_role: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-    }
+          _role: Database["public"]["Enums"]["app_role"];
+          _user_id: string;
+        };
+        Returns: boolean;
+      };
+    };
     Enums: {
-      app_role: "admin" | "editor"
-    }
+      app_role: "admin" | "editor";
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
   public: {
@@ -302,4 +294,4 @@ export const Constants = {
       app_role: ["admin", "editor"],
     },
   },
-} as const
+} as const;

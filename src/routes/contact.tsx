@@ -169,7 +169,7 @@ function ContactPage() {
                   aria-label={label}
                   target={href.startsWith("http") ? "_blank" : undefined}
                   rel={href.startsWith("http") ? "noreferrer" : undefined}
-                  className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-card text-muted-foreground hover:border-accent/40 hover:text-accent"
+                  className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-card/70 text-muted-foreground shadow-[var(--shadow-card)] backdrop-blur transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:text-accent hover:shadow-[var(--shadow-glow)]"
                 >
                   <Icon className="h-4 w-4" />
                 </a>
@@ -232,7 +232,7 @@ function ContactPage() {
             </Field>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02] disabled:opacity-60"
+              className="tech-button inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-60"
             >
               <span className={ne ? "font-nepali" : ""}>
                 {ne ? "WhatsApp बाट पठाउनुहोस्" : "Send via WhatsApp"}
@@ -261,7 +261,7 @@ function ContactPage() {
                 <button
                   type="button"
                   onClick={clearForm}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-accent/40 hover:text-foreground"
                 >
                   {ne ? "फर्म खाली गर्नुहोस्" : "Clear form"}
                 </button>
@@ -276,7 +276,9 @@ function ContactPage() {
           width: 100%;
           border-radius: 0.625rem;
           border: 1px solid var(--color-border);
-          background: var(--color-background);
+          background: color-mix(in oklab, var(--color-card) 76%, transparent);
+          color: var(--color-foreground);
+          backdrop-filter: blur(16px);
           padding: 0.7rem 0.9rem;
           font-size: 0.9rem;
           outline: none;
@@ -305,7 +307,7 @@ function FallbackButton({
       href={href}
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noreferrer" : undefined}
-      className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-[1.02]"
+      className="tech-button inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold"
     >
       <Icon className="h-4 w-4" />
       {children}
@@ -347,8 +349,10 @@ function InfoCard({
     <>
       <div
         className={cn(
-          "grid h-10 w-10 place-items-center rounded-xl",
-          accent ? "bg-accent text-accent-foreground" : "bg-primary/10 text-primary",
+          "grid h-10 w-10 place-items-center rounded-xl border border-border shadow-[var(--shadow-card)]",
+          accent
+            ? "bg-accent text-accent-foreground shadow-[var(--shadow-glow)]"
+            : "bg-primary/10 text-primary",
         )}
       >
         <Icon className="h-5 w-5" />

@@ -1,5 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Star, Sparkles, ArrowRight, Quote } from "lucide-react";
+import {
+  ArrowUpRight,
+  Star,
+  Sparkles,
+  ArrowRight,
+  Quote,
+  Code2,
+  Globe2,
+  SearchCheck,
+  BrainCircuit,
+  PenLine,
+  BriefcaseBusiness,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -58,15 +70,19 @@ function Hero() {
         {/* Left: Portrait */}
         <div className="relative order-2 md:order-1">
           <div className="relative mx-auto aspect-[4/5] w-full max-w-md">
-            <div className="absolute -inset-4 rounded-[2rem] bg-[image:var(--gradient-accent)] opacity-20 blur-2xl" />
-            <div className="relative h-full w-full overflow-hidden rounded-[2rem] border border-border bg-[image:var(--gradient-primary)] shadow-[var(--shadow-elevated)]">
+            <div className="absolute -inset-4 rounded-[2rem] bg-[image:var(--gradient-accent)] opacity-25 blur-2xl" />
+            <div className="glow-border tech-panel relative h-full w-full overflow-hidden rounded-[2rem] shadow-[var(--shadow-elevated)]">
+              <div className="absolute inset-0 bg-[image:var(--gradient-primary)] opacity-25" />
               <img
                 src={"/harendra_portrait.png"}
                 alt="Harendra Lamsal portrait"
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover mix-blend-luminosity"
                 loading="eager"
               />
-              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[oklch(0.15_0.05_256)] to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent" />
+              <div className="absolute left-5 top-5 rounded-full border border-accent/30 bg-background/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-accent backdrop-blur">
+                AI-ready builds
+              </div>
               <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between text-primary-foreground">
                 <div>
                   <p className="text-sm font-semibold">Harendra Lamsal</p>
@@ -74,16 +90,16 @@ function Hero() {
                     Nepal · Worldwide
                   </p>
                 </div>
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-accent text-accent-foreground">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-accent text-accent-foreground shadow-[var(--shadow-glow)]">
                   <Sparkles className="h-4 w-4" />
                 </div>
               </div>
             </div>
 
             {/* Floating stat badge */}
-            <div className="absolute -left-6 top-12 hidden rotate-[-6deg] rounded-2xl border border-border bg-card p-3 shadow-[var(--shadow-card)] md:block">
+            <div className="surface-card absolute -left-6 top-12 hidden rotate-[-6deg] p-3 md:block">
               <div className="flex items-center gap-2">
-                <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent/15 text-accent">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent/15 text-accent shadow-[var(--shadow-glow)]">
                   <Star className="h-4 w-4 fill-accent" />
                 </div>
                 <div>
@@ -94,9 +110,9 @@ function Hero() {
                 </div>
               </div>
             </div>
-            <div className="absolute -right-5 bottom-16 hidden rotate-[5deg] rounded-2xl border border-border bg-card p-3 shadow-[var(--shadow-card)] md:block">
+            <div className="surface-card absolute -right-5 bottom-16 hidden rotate-[5deg] p-3 md:block">
               <div className="flex items-center gap-2">
-                <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 text-primary">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 text-primary shadow-[var(--shadow-glow)]">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 <div>
@@ -114,7 +130,7 @@ function Hero() {
         <div className="order-1 md:order-2">
           <p
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground",
+              "inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground shadow-[var(--shadow-card)] backdrop-blur",
               lang === "ne" && "font-nepali",
             )}
           >
@@ -149,20 +165,20 @@ function Hero() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/portfolio"
-              className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02]"
+              className="tech-button group inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold"
             >
               <span className={lang === "ne" ? "font-nepali" : ""}>{t("hero.cta.portfolio")}</span>
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:rotate-45" />
             </Link>
             <Link
               to="/blog"
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-5 py-3 text-sm font-semibold text-foreground shadow-[var(--shadow-card)] backdrop-blur transition-colors hover:border-accent/40 hover:bg-card"
             >
               <span className={lang === "ne" ? "font-nepali" : ""}>{t("hero.cta.blog")}</span>
             </Link>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 rounded-full border border-accent/35 bg-accent/10 px-5 py-3 text-sm font-semibold text-accent shadow-[var(--shadow-card)] backdrop-blur transition-transform hover:scale-[1.02] hover:shadow-[var(--shadow-glow)]"
             >
               <span className={lang === "ne" ? "font-nepali" : ""}>{t("hero.cta.contact")}</span>
             </Link>
@@ -197,11 +213,11 @@ function Marquee() {
     "Performance",
   ];
   return (
-    <div className="border-y border-border bg-surface/60 py-4">
+    <div className="border-y border-border bg-surface/45 py-4 backdrop-blur">
       <div className="container-page flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         {words.map((w) => (
           <span key={w} className="inline-flex items-center gap-2">
-            <span className="h-1 w-1 rounded-full bg-accent" />
+            <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[var(--shadow-glow)]" />
             {w}
           </span>
         ))}
@@ -275,8 +291,17 @@ function About() {
 
 function Skills() {
   const { t, lang } = useI18n();
+  const expertise = [
+    { name: "Website Development", icon: Code2, glow: "text-cyan-300" },
+    { name: "WordPress", icon: Globe2, glow: "text-blue-300" },
+    { name: "SEO", icon: SearchCheck, glow: "text-emerald-300" },
+    { name: "Artificial Intelligence", icon: BrainCircuit, glow: "text-violet-300" },
+    { name: "Blogging", icon: PenLine, glow: "text-sky-300" },
+    { name: "Freelancing", icon: BriefcaseBusiness, glow: "text-amber-300" },
+  ];
   return (
-    <section className="border-y border-border bg-surface/50">
+    <section className="relative overflow-hidden border-y border-border bg-surface/35">
+      <div className="pointer-events-none absolute inset-0 subtle-grid opacity-[0.08]" />
       <div className="container-page py-20 md:py-24">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -291,7 +316,24 @@ function Skills() {
             </h2>
           </div>
         </div>
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {expertise.map(({ name, icon: Icon, glow }) => (
+            <div key={name} className="surface-card glow-border group overflow-hidden p-6">
+              <div className="flex items-start gap-4">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-border bg-background/50 shadow-[var(--shadow-glow)]">
+                  <Icon className={cn("h-5 w-5", glow)} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight">{name}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Premium strategy, implementation, and optimization for modern digital products.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {skills.map((s, i) => (
             <div
               key={s.name}
@@ -300,14 +342,14 @@ function Skills() {
             >
               <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-bold tracking-tight">{s.name}</p>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                <span className="rounded-full border border-border bg-muted/70 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                   {s.category}
                 </span>
               </div>
               <div className="mt-5">
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full bg-[image:var(--gradient-accent)] transition-[width] duration-700 ease-out"
+                    className="h-full rounded-full bg-[image:var(--gradient-accent)] shadow-[var(--shadow-glow)] transition-[width] duration-700 ease-out"
                     style={{ width: `${s.level}%` }}
                   />
                 </div>

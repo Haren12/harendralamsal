@@ -8,9 +8,16 @@ export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About Harendra Lamsal — Web Developer from Nepal" },
-      { name: "description", content: "My story, journey, mission, and how I came to build websites and write about the web." },
+      {
+        name: "description",
+        content:
+          "My story, journey, mission, and how I came to build websites and write about the web.",
+      },
       { property: "og:title", content: "About Harendra Lamsal" },
-      { property: "og:description", content: "My story, journey, mission, and how I came to build websites." },
+      {
+        property: "og:description",
+        content: "My story, journey, mission, and how I came to build websites.",
+      },
       { property: "og:url", content: "/about" },
     ],
     links: [{ rel: "canonical", href: "/about" }],
@@ -29,12 +36,22 @@ function AboutPage() {
           <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-6 bg-accent" /> {ne ? "मेरो बारेमा" : "About me"}
           </p>
-          <h1 className={cn("mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl text-balance", ne && "font-nepali")}>
+          <h1
+            className={cn(
+              "mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl text-balance",
+              ne && "font-nepali",
+            )}
+          >
             {ne
               ? "नेपालका एक डेभलपर, जसले वेबलाई अलि सजिलो बनाउन खोज्छ।"
               : "A developer from Nepal trying to make the web a little better."}
           </h1>
-          <p className={cn("mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground", ne && "font-nepali")}>
+          <p
+            className={cn(
+              "mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground",
+              ne && "font-nepali",
+            )}
+          >
             {ne
               ? "म हरेन्द्र लम्साल हुँ — एक स्व-प्रशिक्षित वेब डेभलपर, ब्लगर र डिजिटल क्रिएटर। मैले विगत ६ वर्षदेखि नेपाल र विश्वभरका व्यवसायहरूलाई आधुनिक वेबसाइट निर्माण गर्न मद्दत गर्दै आएको छु।"
               : "I'm Harendra Lamsal — a self-taught web developer, blogger, and digital creator. For the past 6+ years I've helped businesses in Nepal and worldwide ship modern, fast websites."}
@@ -53,10 +70,34 @@ function AboutPage() {
         <Side title={ne ? "क्यारियर यात्रा" : "Career journey"} icon={Briefcase} />
         <ol className="relative space-y-6 border-l-2 border-accent/40 pl-6">
           {[
-            { year: "2019", t: ne ? "पहिलो फ्रिल्यान्स प्रोजेक्ट" : "First freelance project", d: ne ? "सुर्खेतको स्थानीय व्यवसायको लागि WordPress साइट।" : "A WordPress site for a local Surkhet business." },
-            { year: "2021", t: ne ? "पूर्णकालीन फ्रिल्यान्सर" : "Full-time freelancer", d: ne ? "नेपाल र अस्ट्रेलियाका क्लाइन्टहरूका लागि काम।" : "Working with clients across Nepal and Australia." },
-            { year: "2023", t: ne ? "ब्लग सुरु" : "Started the blog", d: ne ? "अंग्रेजी र नेपाली दुवैमा लेख्न थालें।" : "Began publishing in both English and Nepali." },
-            { year: "2025", t: ne ? "टिमको रूपमा बढ्दै" : "Building a small team", d: ne ? "अब छोटो टिमसँग ठूला परियोजनाहरू ल्याउँदै।" : "Now taking on larger builds with a tight collaborator network." },
+            {
+              year: "2019",
+              t: ne ? "पहिलो फ्रिल्यान्स प्रोजेक्ट" : "First freelance project",
+              d: ne
+                ? "सुर्खेतको स्थानीय व्यवसायको लागि WordPress साइट।"
+                : "A WordPress site for a local Surkhet business.",
+            },
+            {
+              year: "2021",
+              t: ne ? "पूर्णकालीन फ्रिल्यान्सर" : "Full-time freelancer",
+              d: ne
+                ? "नेपाल र अस्ट्रेलियाका क्लाइन्टहरूका लागि काम।"
+                : "Working with clients across Nepal and Australia.",
+            },
+            {
+              year: "2023",
+              t: ne ? "ब्लग सुरु" : "Started the blog",
+              d: ne
+                ? "अंग्रेजी र नेपाली दुवैमा लेख्न थालें।"
+                : "Began publishing in both English and Nepali.",
+            },
+            {
+              year: "2025",
+              t: ne ? "टिमको रूपमा बढ्दै" : "Building a small team",
+              d: ne
+                ? "अब छोटो टिमसँग ठूला परियोजनाहरू ल्याउँदै।"
+                : "Now taking on larger builds with a tight collaborator network.",
+            },
           ].map((s) => (
             <li key={s.year}>
               <span className="absolute -left-[7px] mt-1.5 h-3 w-3 rounded-full bg-accent ring-4 ring-background" />
@@ -84,7 +125,10 @@ function AboutPage() {
         <Side title={ne ? "सीप र विशेषज्ञता" : "Skills & expertise"} icon={Compass} />
         <div className="flex flex-wrap gap-2">
           {skills.map((s) => (
-            <span key={s.name} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium">
+            <span
+              key={s.name}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium"
+            >
               <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
               {s.name}
             </span>
@@ -99,7 +143,10 @@ function AboutPage() {
             ne ? "WordPress समुदायमा वक्ता" : "Speaker at WordPress meetups",
             ne ? "नेपाली ब्लग थिम 'Kavi' का सर्जक" : "Creator of 'Kavi' Nepali blog theme",
           ].map((a) => (
-            <li key={a} className={cn("surface-card flex items-start gap-3 p-4", ne && "font-nepali")}>
+            <li
+              key={a}
+              className={cn("surface-card flex items-start gap-3 p-4", ne && "font-nepali")}
+            >
               <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
               <span className="text-sm font-medium">{a}</span>
             </li>
@@ -122,7 +169,10 @@ function AboutPage() {
           <p className={cn("mx-auto mt-3 max-w-xl text-muted-foreground", ne && "font-nepali")}>
             {ne ? "तपाईंको परियोजनाको बारेमा सुन्न मन छ।" : "I'd love to hear about your project."}
           </p>
-          <Link to="/contact" className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-glow)]">
+          <Link
+            to="/contact"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-glow)]"
+          >
             {ne ? "सम्पर्क गर्नुहोस्" : "Get in touch"}
           </Link>
         </div>
@@ -131,7 +181,13 @@ function AboutPage() {
   );
 }
 
-function Side({ title, icon: Icon }: { title: string; icon: React.ComponentType<{ className?: string }> }) {
+function Side({
+  title,
+  icon: Icon,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
   return (
     <div className="md:sticky md:top-24 md:self-start">
       <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5">
@@ -143,14 +199,30 @@ function Side({ title, icon: Icon }: { title: string; icon: React.ComponentType<
 }
 function Prose({ children }: { children: React.ReactNode }) {
   const { lang } = useI18n();
-  return <p className={cn("max-w-2xl text-base leading-relaxed text-muted-foreground", lang === "ne" && "font-nepali")}>{children}</p>;
+  return (
+    <p
+      className={cn(
+        "max-w-2xl text-base leading-relaxed text-muted-foreground",
+        lang === "ne" && "font-nepali",
+      )}
+    >
+      {children}
+    </p>
+  );
 }
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   const { lang } = useI18n();
   return (
     <div className="surface-card p-6">
       <h3 className={cn("text-base font-bold", lang === "ne" && "font-nepali")}>{title}</h3>
-      <p className={cn("mt-2 text-sm leading-relaxed text-muted-foreground", lang === "ne" && "font-nepali")}>{children}</p>
+      <p
+        className={cn(
+          "mt-2 text-sm leading-relaxed text-muted-foreground",
+          lang === "ne" && "font-nepali",
+        )}
+      >
+        {children}
+      </p>
     </div>
   );
 }

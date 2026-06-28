@@ -491,49 +491,136 @@ export const resourceGroups: ResourceGroup[] = [
   {
     title: { en: "Free Tools", ne: "निःशुल्क उपकरणहरू" },
     items: [
-      { name: "Google PageSpeed Insights", description: { en: "Audit Core Web Vitals for any URL.", ne: "कुनै पनि URL को Core Web Vitals अडिट।" }, url: "https://pagespeed.web.dev" },
-      { name: "Squoosh", description: { en: "Browser-based image compression.", ne: "ब्राउजर-आधारित तस्बिर कम्प्रेसन।" }, url: "https://squoosh.app" },
-      { name: "Excalidraw", description: { en: "Quick wireframes & diagrams.", ne: "द्रुत वायरफ्रेम र चित्रहरू।" }, url: "https://excalidraw.com" },
+      {
+        name: "Google PageSpeed Insights",
+        description: {
+          en: "Audit Core Web Vitals for any URL.",
+          ne: "कुनै पनि URL को Core Web Vitals अडिट।",
+        },
+        url: "https://pagespeed.web.dev",
+      },
+      {
+        name: "Squoosh",
+        description: {
+          en: "Browser-based image compression.",
+          ne: "ब्राउजर-आधारित तस्बिर कम्प्रेसन।",
+        },
+        url: "https://squoosh.app",
+      },
+      {
+        name: "Excalidraw",
+        description: { en: "Quick wireframes & diagrams.", ne: "द्रुत वायरफ्रेम र चित्रहरू।" },
+        url: "https://excalidraw.com",
+      },
     ],
   },
   {
     title: { en: "Recommended Hosting", ne: "सिफारिस गरिएको होस्टिङ" },
     items: [
-      { name: "Hostinger", description: { en: "Great budget WordPress hosting.", ne: "उत्कृष्ट बजेट WordPress होस्टिङ।" }, url: "https://www.hostinger.com" },
-      { name: "Cloudways", description: { en: "Managed VPS for serious sites.", ne: "गम्भीर साइटहरूका लागि व्यवस्थित VPS।" }, url: "https://www.cloudways.com" },
-      { name: "Vercel", description: { en: "Best-in-class for Next.js.", ne: "Next.js का लागि उत्कृष्ट।" }, url: "https://vercel.com" },
+      {
+        name: "Hostinger",
+        description: {
+          en: "Great budget WordPress hosting.",
+          ne: "उत्कृष्ट बजेट WordPress होस्टिङ।",
+        },
+        url: "https://www.hostinger.com",
+      },
+      {
+        name: "Cloudways",
+        description: {
+          en: "Managed VPS for serious sites.",
+          ne: "गम्भीर साइटहरूका लागि व्यवस्थित VPS।",
+        },
+        url: "https://www.cloudways.com",
+      },
+      {
+        name: "Vercel",
+        description: { en: "Best-in-class for Next.js.", ne: "Next.js का लागि उत्कृष्ट।" },
+        url: "https://vercel.com",
+      },
     ],
   },
   {
     title: { en: "WordPress Resources", ne: "WordPress स्रोतहरू" },
     items: [
-      { name: "Rank Math", description: { en: "Full-featured SEO plugin.", ne: "पूर्ण-सुविधा युक्त SEO प्लगइन।" }, url: "https://rankmath.com" },
-      { name: "WP Rocket", description: { en: "Caching that actually works.", ne: "वास्तवमै काम गर्ने क्यासिङ।" }, url: "https://wp-rocket.me" },
-      { name: "Elementor", description: { en: "Drag-and-drop page builder.", ne: "ड्र्याग-एन्ड-ड्रप पेज बिल्डर।" }, url: "https://elementor.com" },
+      {
+        name: "Rank Math",
+        description: { en: "Full-featured SEO plugin.", ne: "पूर्ण-सुविधा युक्त SEO प्लगइन।" },
+        url: "https://rankmath.com",
+      },
+      {
+        name: "WP Rocket",
+        description: { en: "Caching that actually works.", ne: "वास्तवमै काम गर्ने क्यासिङ।" },
+        url: "https://wp-rocket.me",
+      },
+      {
+        name: "Elementor",
+        description: { en: "Drag-and-drop page builder.", ne: "ड्र्याग-एन्ड-ड्रप पेज बिल्डर।" },
+        url: "https://elementor.com",
+      },
     ],
   },
   {
     title: { en: "SEO Resources", ne: "SEO स्रोतहरू" },
     items: [
-      { name: "Ahrefs Blog", description: { en: "Deep, data-driven SEO articles.", ne: "गहिरो, डेटा-आधारित SEO लेखहरू।" }, url: "https://ahrefs.com/blog" },
-      { name: "Google Search Central", description: { en: "Straight from the source.", ne: "स्रोतबाटै सीधै।" }, url: "https://developers.google.com/search" },
-      { name: "Backlinko", description: { en: "Actionable SEO playbooks.", ne: "कार्ययोग्य SEO प्लेबुक।" }, url: "https://backlinko.com" },
+      {
+        name: "Ahrefs Blog",
+        description: {
+          en: "Deep, data-driven SEO articles.",
+          ne: "गहिरो, डेटा-आधारित SEO लेखहरू।",
+        },
+        url: "https://ahrefs.com/blog",
+      },
+      {
+        name: "Google Search Central",
+        description: { en: "Straight from the source.", ne: "स्रोतबाटै सीधै।" },
+        url: "https://developers.google.com/search",
+      },
+      {
+        name: "Backlinko",
+        description: { en: "Actionable SEO playbooks.", ne: "कार्ययोग्य SEO प्लेबुक।" },
+        url: "https://backlinko.com",
+      },
     ],
   },
   {
     title: { en: "Development Resources", ne: "डेभलपमेन्ट स्रोतहरू" },
     items: [
-      { name: "MDN Web Docs", description: { en: "The web platform reference.", ne: "वेब प्लेटफर्म सन्दर्भ।" }, url: "https://developer.mozilla.org" },
-      { name: "web.dev", description: { en: "Google's modern web guide.", ne: "Google को आधुनिक वेब गाइड।" }, url: "https://web.dev" },
-      { name: "GitHub", description: { en: "Where code lives.", ne: "जहाँ कोड बस्छ।" }, url: "https://github.com" },
+      {
+        name: "MDN Web Docs",
+        description: { en: "The web platform reference.", ne: "वेब प्लेटफर्म सन्दर्भ।" },
+        url: "https://developer.mozilla.org",
+      },
+      {
+        name: "web.dev",
+        description: { en: "Google's modern web guide.", ne: "Google को आधुनिक वेब गाइड।" },
+        url: "https://web.dev",
+      },
+      {
+        name: "GitHub",
+        description: { en: "Where code lives.", ne: "जहाँ कोड बस्छ।" },
+        url: "https://github.com",
+      },
     ],
   },
   {
     title: { en: "AI Tools", ne: "AI उपकरणहरू" },
     items: [
-      { name: "ChatGPT", description: { en: "Workhorse general-purpose assistant.", ne: "सामान्य-उद्देश्य सहायक।" }, url: "https://chat.openai.com" },
-      { name: "Claude", description: { en: "Long-context writing partner.", ne: "लामो-सन्दर्भ लेखन साथी।" }, url: "https://claude.ai" },
-      { name: "Cursor", description: { en: "AI-first code editor.", ne: "AI-पहिलो कोड सम्पादक।" }, url: "https://cursor.com" },
+      {
+        name: "ChatGPT",
+        description: { en: "Workhorse general-purpose assistant.", ne: "सामान्य-उद्देश्य सहायक।" },
+        url: "https://chat.openai.com",
+      },
+      {
+        name: "Claude",
+        description: { en: "Long-context writing partner.", ne: "लामो-सन्दर्भ लेखन साथी।" },
+        url: "https://claude.ai",
+      },
+      {
+        name: "Cursor",
+        description: { en: "AI-first code editor.", ne: "AI-पहिलो कोड सम्पादक।" },
+        url: "https://cursor.com",
+      },
     ],
   },
 ];

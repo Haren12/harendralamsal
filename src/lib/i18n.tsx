@@ -15,7 +15,10 @@ export const dict: Dict = {
   "nav.hire": { en: "Hire me", ne: "मलाई हायर गर्नुहोस्" },
 
   // Hero
-  "hero.eyebrow": { en: "Website Developer · Blogger · Digital Creator", ne: "वेबसाइट डेभलपर · ब्लगर · डिजिटल क्रिएटर" },
+  "hero.eyebrow": {
+    en: "Website Developer · Blogger · Digital Creator",
+    ne: "वेबसाइट डेभलपर · ब्लगर · डिजिटल क्रिएटर",
+  },
   "hero.headline": { en: "Hi, I'm Harendra Lamsal.", ne: "नमस्ते, म हरेन्द्र लम्साल हुँ।" },
   "hero.subheadline": {
     en: "Website Developer, Blogger, and Digital Creator.",
@@ -32,11 +35,17 @@ export const dict: Dict = {
     en: "Building Websites. Sharing Knowledge. Creating Digital Experiences.",
     ne: "वेबसाइट निर्माण। ज्ञान साझेदारी। डिजिटल अनुभव सिर्जना।",
   },
-  "hero.based": { en: "Based in Nepal · Available worldwide", ne: "नेपालमा आधारित · विश्वभर उपलब्ध" },
+  "hero.based": {
+    en: "Based in Nepal · Available worldwide",
+    ne: "नेपालमा आधारित · विश्वभर उपलब्ध",
+  },
 
   // Sections
   "section.about.kicker": { en: "About me", ne: "मेरो बारेमा" },
-  "section.about.title": { en: "Crafting the web from Nepal, for the world.", ne: "नेपालबाट विश्वका लागि वेब निर्माण।" },
+  "section.about.title": {
+    en: "Crafting the web from Nepal, for the world.",
+    ne: "नेपालबाट विश्वका लागि वेब निर्माण।",
+  },
   "section.about.body": {
     en: "I'm a self-taught developer who's spent the last several years shipping fast, clean websites for small businesses, creators, and schools — and writing about everything I learn along the way. My focus: thoughtful design, performant code, and content that actually helps readers.",
     ne: "म एक स्व-प्रशिक्षित डेभलपर हुँ जसले विगत केही वर्षदेखि साना व्यवसाय, क्रिएटर र विद्यालयहरूका लागि छिटो र सफा वेबसाइटहरू बनाउँदै आएको छु — र सिकेका सबै कुरा लेख्दै आएको छु। मेरो ध्यान: सोचपूर्ण डिजाइन, छिटो कोड र पाठकलाई वास्तवमै सहयोग गर्ने सामग्री।",
@@ -54,14 +63,20 @@ export const dict: Dict = {
   "section.testimonials.kicker": { en: "Kind words", ne: "राम्रा शब्दहरू" },
   "section.testimonials.title": { en: "What clients say.", ne: "ग्राहकहरू के भन्छन्।" },
   "section.newsletter.kicker": { en: "Newsletter", ne: "न्युजलेटर" },
-  "section.newsletter.title": { en: "Practical web tips, in your inbox.", ne: "व्यावहारिक वेब टिप्स, तपाईंको इनबक्समा।" },
+  "section.newsletter.title": {
+    en: "Practical web tips, in your inbox.",
+    ne: "व्यावहारिक वेब टिप्स, तपाईंको इनबक्समा।",
+  },
   "section.newsletter.body": {
     en: "One short, useful email a week on web development, WordPress, SEO, and the tools I'm actually using. No spam, unsubscribe anytime.",
     ne: "हप्तामा एक छोटो, उपयोगी इमेल — वेब डेभलपमेन्ट, WordPress, SEO र मैले प्रयोग गर्ने उपकरणहरूको बारेमा। कुनै स्प्याम छैन।",
   },
   "section.newsletter.placeholder": { en: "your@email.com", ne: "your@email.com" },
   "section.newsletter.subscribe": { en: "Subscribe", ne: "सदस्यता लिनुहोस्" },
-  "section.newsletter.success": { en: "Thanks! Please check your inbox to confirm.", ne: "धन्यवाद! कृपया पुष्टि गर्न आफ्नो इनबक्स जाँच्नुहोस्।" },
+  "section.newsletter.success": {
+    en: "Thanks! Please check your inbox to confirm.",
+    ne: "धन्यवाद! कृपया पुष्टि गर्न आफ्नो इनबक्स जाँच्नुहोस्।",
+  },
   "section.contact.kicker": { en: "Let's talk", ne: "कुरा गरौं" },
   "section.contact.title": { en: "Have a project in mind?", ne: "कुनै परियोजना छ?" },
   "section.contact.body": {
@@ -104,7 +119,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
-    const stored = typeof window !== "undefined" ? (localStorage.getItem("lang") as Lang | null) : null;
+    const stored =
+      typeof window !== "undefined" ? (localStorage.getItem("lang") as Lang | null) : null;
     if (stored === "en" || stored === "ne") setLangState(stored);
   }, []);
 

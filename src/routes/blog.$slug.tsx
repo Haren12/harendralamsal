@@ -2,7 +2,17 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
-import { ArrowLeft, Calendar, Clock, Eye, Tag, Share2, Twitter, Facebook, Linkedin } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Eye,
+  Tag,
+  Share2,
+  Twitter,
+  Facebook,
+  Linkedin,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getPublishedPost, incrementPostView, listPublishedPosts } from "@/lib/blog.functions";
@@ -51,12 +61,10 @@ export const Route = createFileRoute("/blog/$slug")({
     if (!p) return {};
     const title = p.seo_title || p.title_en || p.title_ne;
     const desc = p.seo_description || p.excerpt_en || p.excerpt_ne;
-    const keywords = [
-      p.focus_keyword,
-      ...p.secondary_keywords,
-      ...p.tags,
-    ].filter(Boolean).join(", ");
-    const meta: any[] = [
+    const keywords = [p.focus_keyword, ...p.secondary_keywords, ...p.tags]
+      .filter(Boolean)
+      .join(", ");
+    const meta: Array<Record<string, string>> = [
       { title: `${title} — Harendra Lamsal` },
       { name: "description", content: desc },
       ...(keywords ? [{ name: "keywords", content: keywords }] : []),
@@ -182,17 +190,21 @@ function PostPage() {
   return (
     <>
       <article>
-        <div className="relative aspect-[21/9] w-full overflow-hidden bg-muted">
+        <div className="hero-bg relative aspect-[21/9] min-h-[360px] w-full overflow-hidden bg-muted">
           {post.cover_image_url ? (
-            <img src={post.cover_image_url} alt="" className="h-full w-full object-cover" />
+            <img
+              src={post.cover_image_url}
+              alt=""
+              className="h-full w-full object-cover opacity-80"
+            />
           ) : (
             <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-70" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-background/10" />
           <div className="container-page relative flex h-full max-w-4xl flex-col justify-end pb-10">
             <Link
               to="/blog"
-              className="inline-flex w-fit items-center gap-1.5 rounded-full bg-background/85 px-3 py-1.5 text-xs font-semibold text-foreground backdrop-blur hover:text-accent"
+              className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs font-semibold text-foreground shadow-[var(--shadow-card)] backdrop-blur hover:text-accent"
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Blog
             </Link>
@@ -206,7 +218,7 @@ function PostPage() {
                 {ne ? post.category.name_ne : post.category.name_en}
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-2.5 py-1 backdrop-blur">
               <Calendar className="h-3.5 w-3.5" />
               {post.published_at &&
                 new Date(post.published_at).toLocaleDateString(ne ? "ne-NP" : "en-US", {
@@ -215,12 +227,12 @@ function PostPage() {
                   year: "numeric",
                 })}
             </span>
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-2.5 py-1 backdrop-blur">
               <Clock className="h-3.5 w-3.5" /> {post.reading_minutes} {t("common.minRead")}
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Eye className="h-3.5 w-3.5" /> {post.views_count.toLocaleString(ne ? "ne-NP" : "en-US")}{" "}
-              {ne ? "भ्यु" : "views"}
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-2.5 py-1 backdrop-blur">
+              <Eye className="h-3.5 w-3.5" />{" "}
+              {post.views_count.toLocaleString(ne ? "ne-NP" : "en-US")} {ne ? "भ्यु" : "views"}
             </span>
           </div>
 
@@ -233,8 +245,8 @@ function PostPage() {
             {postTitle}
           </h1>
 
-          <div className="mt-6 flex items-center gap-3 border-y border-border py-4">
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-xs font-bold text-primary-foreground">
+          <div className="surface-card mt-6 flex items-center gap-3 px-4 py-4">
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)]">
               HL
             </div>
             <div className="flex-1">
@@ -250,7 +262,7 @@ function PostPage() {
                   title={label}
                   target="_blank"
                   rel="noreferrer"
-                  className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground hover:text-accent"
+                  className="grid h-8 w-8 place-items-center rounded-full border border-border bg-card/70 text-muted-foreground transition-all hover:border-accent/40 hover:text-accent hover:shadow-[var(--shadow-glow)]"
                 >
                   <Icon className="h-3.5 w-3.5" />
                 </a>
@@ -260,7 +272,7 @@ function PostPage() {
                 aria-label="Share article"
                 title="Share article"
                 onClick={() => sharePost(postTitle, postUrl)}
-                className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground hover:text-accent"
+                className="grid h-8 w-8 place-items-center rounded-full border border-border bg-card/70 text-muted-foreground transition-all hover:border-accent/40 hover:text-accent hover:shadow-[var(--shadow-glow)]"
               >
                 <Share2 className="h-3.5 w-3.5" />
               </button>
@@ -280,7 +292,7 @@ function PostPage() {
 
           <div
             className={cn(
-              "prose prose-lg mt-6 max-w-none whitespace-pre-wrap text-base leading-relaxed text-foreground",
+              "prose prose-lg mt-6 max-w-none whitespace-pre-wrap rounded-2xl border border-border bg-card/35 p-5 text-base leading-relaxed text-foreground shadow-[var(--shadow-card)] backdrop-blur md:p-7",
               showNe && "font-nepali",
             )}
           >
@@ -293,7 +305,7 @@ function PostPage() {
               {post.tags.map((tg) => (
                 <span
                   key={tg}
-                  className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground"
+                  className="rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-semibold text-muted-foreground backdrop-blur hover:border-accent/40 hover:text-accent"
                 >
                   #{tg}
                 </span>
@@ -304,7 +316,7 @@ function PostPage() {
       </article>
 
       {related.length > 0 && (
-        <section className="border-t border-border bg-surface/40">
+        <section className="border-t border-border bg-surface/35">
           <div className="container-page py-16">
             <h2 className={cn("text-2xl font-bold tracking-tight", ne && "font-nepali")}>
               {ne ? "सम्बन्धित लेखहरू" : "Related articles"}
@@ -315,7 +327,7 @@ function PostPage() {
                   key={r.id}
                   to="/blog/$slug"
                   params={{ slug: r.slug }}
-                  className="surface-card overflow-hidden"
+                  className="surface-card group overflow-hidden"
                 >
                   <div className="aspect-[16/10] overflow-hidden bg-muted">
                     {r.cover_image_url ? (
@@ -323,7 +335,7 @@ function PostPage() {
                         src={r.cover_image_url}
                         alt=""
                         loading="lazy"
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
                       <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-70" />
