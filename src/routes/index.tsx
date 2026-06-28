@@ -6,7 +6,6 @@ import { useI18n } from "@/lib/i18n";
 import { skills, services, projects, posts, testimonials } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -16,9 +15,16 @@ export const Route = createFileRoute("/")({
         content:
           "I build modern websites and write practical articles about web development, WordPress, SEO, and AI — in English and Nepali. Available for projects worldwide.",
       },
+      { name: "robots", content: "index, follow" },
       { property: "og:title", content: "Harendra Lamsal — Web Developer & Blogger" },
-      { property: "og:description", content: "Building websites. Sharing knowledge. Creating digital experiences." },
+      {
+        property: "og:description",
+        content: "Building websites. Sharing knowledge. Creating digital experiences.",
+      },
       { property: "og:url", content: "/" },
+      { property: "og:image", content: "/harendra_portrait.png" },
+      { property: "og:image:alt", content: "Harendra Lamsal portrait" },
+      { property: "twitter:image", content: "/harendra_portrait.png" },
     ],
     links: [{ rel: "canonical", href: "/" }],
   }),
@@ -64,7 +70,9 @@ function Hero() {
               <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between text-primary-foreground">
                 <div>
                   <p className="text-sm font-semibold">Harendra Lamsal</p>
-                  <p className="text-[11px] uppercase tracking-wider opacity-70">Nepal · Worldwide</p>
+                  <p className="text-[11px] uppercase tracking-wider opacity-70">
+                    Nepal · Worldwide
+                  </p>
                 </div>
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-accent text-accent-foreground">
                   <Sparkles className="h-4 w-4" />
@@ -80,7 +88,9 @@ function Hero() {
                 </div>
                 <div>
                   <p className="text-sm font-bold leading-none">50+ projects</p>
-                  <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">delivered</p>
+                  <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    delivered
+                  </p>
                 </div>
               </div>
             </div>
@@ -91,7 +101,9 @@ function Hero() {
                 </div>
                 <div>
                   <p className="text-sm font-bold leading-none">Lighthouse 95+</p>
-                  <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">guaranteed</p>
+                  <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    guaranteed
+                  </p>
                 </div>
               </div>
             </div>
@@ -100,7 +112,12 @@ function Hero() {
 
         {/* Right: Copy */}
         <div className="order-1 md:order-2">
-          <p className={cn("inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground", lang === "ne" && "font-nepali")}>
+          <p
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground",
+              lang === "ne" && "font-nepali",
+            )}
+          >
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
             {t("hero.eyebrow")}
           </p>
@@ -151,7 +168,12 @@ function Hero() {
             </Link>
           </div>
 
-          <p className={cn("mt-6 text-xs uppercase tracking-[0.18em] text-muted-foreground", lang === "ne" && "font-nepali")}>
+          <p
+            className={cn(
+              "mt-6 text-xs uppercase tracking-[0.18em] text-muted-foreground",
+              lang === "ne" && "font-nepali",
+            )}
+          >
             {t("hero.based")}
           </p>
         </div>
@@ -163,7 +185,17 @@ function Hero() {
 /* ---------------- Marquee ---------------- */
 
 function Marquee() {
-  const words = ["WordPress", "React", "Next.js", "SEO", "PHP", "Tailwind", "AI Tools", "WooCommerce", "Performance"];
+  const words = [
+    "WordPress",
+    "React",
+    "Next.js",
+    "SEO",
+    "PHP",
+    "Tailwind",
+    "AI Tools",
+    "WooCommerce",
+    "Performance",
+  ];
   return (
     <div className="border-y border-border bg-surface/60 py-4">
       <div className="container-page flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -187,12 +219,22 @@ function About() {
       <div className="grid items-start gap-10 md:grid-cols-[1fr_1.4fr]">
         <div>
           <Kicker>{t("section.about.kicker")}</Kicker>
-          <h2 className={cn("mt-3 text-3xl font-bold tracking-tight sm:text-4xl text-balance", lang === "ne" && "font-nepali")}>
+          <h2
+            className={cn(
+              "mt-3 text-3xl font-bold tracking-tight sm:text-4xl text-balance",
+              lang === "ne" && "font-nepali",
+            )}
+          >
             {t("section.about.title")}
           </h2>
         </div>
         <div>
-          <p className={cn("text-lg leading-relaxed text-muted-foreground", lang === "ne" && "font-nepali")}>
+          <p
+            className={cn(
+              "text-lg leading-relaxed text-muted-foreground",
+              lang === "ne" && "font-nepali",
+            )}
+          >
             {t("section.about.body")}
           </p>
           <div className="mt-8 grid grid-cols-3 gap-4 sm:gap-8">
@@ -203,7 +245,12 @@ function About() {
             ].map((s) => (
               <div key={s.l} className="border-l-2 border-accent pl-4">
                 <p className="text-3xl font-black text-foreground sm:text-4xl">{s.n}</p>
-                <p className={cn("mt-1 text-xs uppercase tracking-wider text-muted-foreground", lang === "ne" && "font-nepali")}>
+                <p
+                  className={cn(
+                    "mt-1 text-xs uppercase tracking-wider text-muted-foreground",
+                    lang === "ne" && "font-nepali",
+                  )}
+                >
                   {s.l}
                 </p>
               </div>
@@ -234,7 +281,12 @@ function Skills() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <Kicker>{t("section.skills.kicker")}</Kicker>
-            <h2 className={cn("mt-3 text-3xl font-bold tracking-tight sm:text-4xl", lang === "ne" && "font-nepali")}>
+            <h2
+              className={cn(
+                "mt-3 text-3xl font-bold tracking-tight sm:text-4xl",
+                lang === "ne" && "font-nepali",
+              )}
+            >
               {t("section.skills.title")}
             </h2>
           </div>
@@ -281,12 +333,22 @@ function Services() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Kicker>{t("section.services.kicker")}</Kicker>
-          <h2 className={cn("mt-3 text-3xl font-bold tracking-tight sm:text-4xl", lang === "ne" && "font-nepali")}>
+          <h2
+            className={cn(
+              "mt-3 text-3xl font-bold tracking-tight sm:text-4xl",
+              lang === "ne" && "font-nepali",
+            )}
+          >
             {t("section.services.title")}
           </h2>
         </div>
-        <Link to="/services" className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent">
-          <span className={lang === "ne" ? "font-nepali" : ""}>{lang === "ne" ? "सबै सेवाहरू" : "All services"}</span>
+        <Link
+          to="/services"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent"
+        >
+          <span className={lang === "ne" ? "font-nepali" : ""}>
+            {lang === "ne" ? "सबै सेवाहरू" : "All services"}
+          </span>
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -296,10 +358,20 @@ function Services() {
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent/15 text-accent">
               <Sparkles className="h-5 w-5" />
             </div>
-            <h3 className={cn("mt-4 text-lg font-bold tracking-tight", lang === "ne" && "font-nepali")}>
+            <h3
+              className={cn(
+                "mt-4 text-lg font-bold tracking-tight",
+                lang === "ne" && "font-nepali",
+              )}
+            >
               {lang === "ne" ? s.title.ne : s.title.en}
             </h3>
-            <p className={cn("mt-2 text-sm leading-relaxed text-muted-foreground", lang === "ne" && "font-nepali")}>
+            <p
+              className={cn(
+                "mt-2 text-sm leading-relaxed text-muted-foreground",
+                lang === "ne" && "font-nepali",
+              )}
+            >
               {lang === "ne" ? s.description.ne : s.description.en}
             </p>
             <div className="mt-5 flex items-center justify-between text-xs">
@@ -333,12 +405,22 @@ function Featured() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <Kicker>{t("section.projects.kicker")}</Kicker>
-            <h2 className={cn("mt-3 text-3xl font-bold tracking-tight sm:text-4xl", lang === "ne" && "font-nepali")}>
+            <h2
+              className={cn(
+                "mt-3 text-3xl font-bold tracking-tight sm:text-4xl",
+                lang === "ne" && "font-nepali",
+              )}
+            >
               {t("section.projects.title")}
             </h2>
           </div>
-          <Link to="/portfolio" className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent">
-            <span className={lang === "ne" ? "font-nepali" : ""}>{t("section.projects.viewAll")}</span>
+          <Link
+            to="/portfolio"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent"
+          >
+            <span className={lang === "ne" ? "font-nepali" : ""}>
+              {t("section.projects.viewAll")}
+            </span>
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -346,7 +428,9 @@ function Featured() {
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {featured.map((p) => (
             <article key={p.slug} className="surface-card group overflow-hidden">
-              <div className={cn("relative aspect-[4/3] overflow-hidden bg-gradient-to-br", p.cover)}>
+              <div
+                className={cn("relative aspect-[4/3] overflow-hidden bg-gradient-to-br", p.cover)}
+              >
                 <div className="absolute inset-0 grid place-items-center">
                   <span className="text-2xl font-black text-white/90 drop-shadow-lg">{p.name}</span>
                 </div>
@@ -356,12 +440,20 @@ function Featured() {
               </div>
               <div className="p-5">
                 <h3 className="text-base font-bold tracking-tight">{p.name}</h3>
-                <p className={cn("mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2", lang === "ne" && "font-nepali")}>
+                <p
+                  className={cn(
+                    "mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2",
+                    lang === "ne" && "font-nepali",
+                  )}
+                >
                   {lang === "ne" ? p.description.ne : p.description.en}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {p.tech.map((tag) => (
-                    <span key={tag} className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    <span
+                      key={tag}
+                      className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+                    >
                       {tag}
                     </span>
                   ))}
@@ -385,11 +477,19 @@ function LatestBlog() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Kicker>{t("section.blog.kicker")}</Kicker>
-          <h2 className={cn("mt-3 text-3xl font-bold tracking-tight sm:text-4xl", lang === "ne" && "font-nepali")}>
+          <h2
+            className={cn(
+              "mt-3 text-3xl font-bold tracking-tight sm:text-4xl",
+              lang === "ne" && "font-nepali",
+            )}
+          >
             {t("section.blog.title")}
           </h2>
         </div>
-        <Link to="/blog" className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent">
+        <Link
+          to="/blog"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent"
+        >
           <span className={lang === "ne" ? "font-nepali" : ""}>{t("section.blog.readAll")}</span>
           <ArrowRight className="h-4 w-4" />
         </Link>
@@ -403,21 +503,41 @@ function LatestBlog() {
             params={{ slug: p.slug }}
             className="surface-card group overflow-hidden"
           >
-            <div className={cn("relative aspect-[16/10] overflow-hidden bg-gradient-to-br", p.cover)}>
+            <div
+              className={cn("relative aspect-[16/10] overflow-hidden bg-gradient-to-br", p.cover)}
+            >
               <div className="absolute left-3 top-3 rounded-full bg-background/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground backdrop-blur">
                 {p.category}
               </div>
             </div>
             <div className="p-5">
-              <h3 className={cn("text-base font-bold leading-snug tracking-tight group-hover:text-accent", lang === "ne" && p.lang !== "en" && "font-nepali")}>
+              <h3
+                className={cn(
+                  "text-base font-bold leading-snug tracking-tight group-hover:text-accent",
+                  lang === "ne" && p.lang !== "en" && "font-nepali",
+                )}
+              >
                 {lang === "ne" && p.lang !== "en" ? p.title.ne : p.title.en}
               </h3>
-              <p className={cn("mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground", lang === "ne" && p.lang !== "en" && "font-nepali")}>
+              <p
+                className={cn(
+                  "mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground",
+                  lang === "ne" && p.lang !== "en" && "font-nepali",
+                )}
+              >
                 {lang === "ne" && p.lang !== "en" ? p.excerpt.ne : p.excerpt.en}
               </p>
               <div className="mt-4 flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
-                <span>{new Date(p.date).toLocaleDateString(lang === "ne" ? "ne-NP" : "en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                <span>{p.readingMinutes} {t("common.minRead")}</span>
+                <span>
+                  {new Date(p.date).toLocaleDateString(lang === "ne" ? "ne-NP" : "en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+                <span>
+                  {p.readingMinutes} {t("common.minRead")}
+                </span>
               </div>
             </div>
           </Link>
@@ -436,7 +556,12 @@ function Testimonials() {
       <div className="container-page py-20 md:py-24">
         <div className="text-center">
           <Kicker>{t("section.testimonials.kicker")}</Kicker>
-          <h2 className={cn("mx-auto mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl text-balance", lang === "ne" && "font-nepali")}>
+          <h2
+            className={cn(
+              "mx-auto mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl text-balance",
+              lang === "ne" && "font-nepali",
+            )}
+          >
             {t("section.testimonials.title")}
           </h2>
         </div>
@@ -444,7 +569,12 @@ function Testimonials() {
           {testimonials.map((tm) => (
             <figure key={tm.name} className="surface-card relative p-6">
               <Quote className="absolute right-5 top-5 h-7 w-7 text-accent/30" />
-              <blockquote className={cn("text-sm leading-relaxed text-foreground", lang === "ne" && "font-nepali")}>
+              <blockquote
+                className={cn(
+                  "text-sm leading-relaxed text-foreground",
+                  lang === "ne" && "font-nepali",
+                )}
+              >
                 "{lang === "ne" ? tm.quote.ne : tm.quote.en}"
               </blockquote>
               <figcaption className="mt-5 flex items-center gap-3 border-t border-border pt-5">
@@ -453,7 +583,9 @@ function Testimonials() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold">{tm.name}</p>
-                  <p className={cn("text-xs text-muted-foreground", lang === "ne" && "font-nepali")}>
+                  <p
+                    className={cn("text-xs text-muted-foreground", lang === "ne" && "font-nepali")}
+                  >
                     {lang === "ne" ? tm.role.ne : tm.role.en}
                   </p>
                 </div>
@@ -495,10 +627,20 @@ function Newsletter() {
         <div className="relative grid items-center gap-8 md:grid-cols-[1.2fr_1fr]">
           <div>
             <Kicker tone="dark">{t("section.newsletter.kicker")}</Kicker>
-            <h2 className={cn("mt-3 text-3xl font-bold tracking-tight sm:text-4xl text-balance", lang === "ne" && "font-nepali")}>
+            <h2
+              className={cn(
+                "mt-3 text-3xl font-bold tracking-tight sm:text-4xl text-balance",
+                lang === "ne" && "font-nepali",
+              )}
+            >
               {t("section.newsletter.title")}
             </h2>
-            <p className={cn("mt-3 max-w-lg text-sm leading-relaxed text-primary-foreground/80 sm:text-base", lang === "ne" && "font-nepali")}>
+            <p
+              className={cn(
+                "mt-3 max-w-lg text-sm leading-relaxed text-primary-foreground/80 sm:text-base",
+                lang === "ne" && "font-nepali",
+              )}
+            >
               {t("section.newsletter.body")}
             </p>
           </div>
@@ -517,7 +659,9 @@ function Newsletter() {
               disabled={submitting}
               className="inline-flex items-center justify-center gap-1.5 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-accent-foreground transition-transform hover:scale-[1.02] disabled:opacity-60"
             >
-              <span className={lang === "ne" ? "font-nepali" : ""}>{t("section.newsletter.subscribe")}</span>
+              <span className={lang === "ne" ? "font-nepali" : ""}>
+                {t("section.newsletter.subscribe")}
+              </span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </form>
@@ -536,7 +680,12 @@ function ContactCTA() {
       <div className="flex flex-col items-start justify-between gap-6 border-t border-border pt-16 md:flex-row md:items-center">
         <div>
           <Kicker>{t("section.contact.kicker")}</Kicker>
-          <h2 className={cn("mt-3 text-3xl font-bold tracking-tight sm:text-4xl text-balance", lang === "ne" && "font-nepali")}>
+          <h2
+            className={cn(
+              "mt-3 text-3xl font-bold tracking-tight sm:text-4xl text-balance",
+              lang === "ne" && "font-nepali",
+            )}
+          >
             {t("section.contact.title")}
           </h2>
           <p className={cn("mt-3 max-w-xl text-muted-foreground", lang === "ne" && "font-nepali")}>
@@ -557,7 +706,13 @@ function ContactCTA() {
 
 /* ---------------- Bits ---------------- */
 
-function Kicker({ children, tone = "light" }: { children: React.ReactNode; tone?: "light" | "dark" }) {
+function Kicker({
+  children,
+  tone = "light",
+}: {
+  children: React.ReactNode;
+  tone?: "light" | "dark";
+}) {
   return (
     <p
       className={cn(

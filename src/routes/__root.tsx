@@ -98,6 +98,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:creator", content: "@harendralamsal" },
       { name: "theme-color", content: "#0A2540" },
+      { name: "robots", content: "index, follow" },
+      {
+        name: "keywords",
+        content: "web development, WordPress, SEO, AI, React, freelance, Nepal, blog",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -120,14 +125,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           nationality: "Nepali",
           email: "harendralamsal4140@gmail.com",
           telephone: "+977-9823587535",
-          knowsAbout: [
-            "Web Development",
-            "WordPress",
-            "SEO",
-            "React",
-            "Next.js",
-            "Blogging",
-          ],
+          knowsAbout: ["Web Development", "WordPress", "SEO", "React", "Next.js", "Blogging"],
           address: { "@type": "PostalAddress", addressLocality: "Surkhet", addressCountry: "NP" },
         }),
       },
