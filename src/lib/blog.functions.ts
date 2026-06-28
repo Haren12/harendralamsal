@@ -7,7 +7,7 @@ import type { BlogPost, BlogCategory } from "./blog.types";
 
 const POST_SELECT = `
   id, slug, title_en, title_ne, excerpt_en, excerpt_ne, body_en, body_ne,
-  cover_image_url, category_id, tags, lang, reading_minutes,
+  cover_image_url, category_id, tags, lang, reading_minutes, views_count,
   seo_title, seo_description, focus_keyword, secondary_keywords,
   internal_link_suggestions, external_references,
   published, published_at, created_at, updated_at,
@@ -137,6 +137,17 @@ export const getPublishedPost = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     return (post ?? null) as unknown as BlogPost | null;
+  });
+
+export const incrementPostView = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(200) }).parse(d))
+  .handler(async ({ data }) => {
+    const supabase = publicClient();
+    const { data: count, error } = await supabase.rpc("increment_blog_post_view", {
+      post_slug: data.slug,
+    });
+    if (error) throw new Error(error.message);
+    return { views_count: count ?? 0 };
   });
 
 export const listCategoriesPublic = createServerFn({ method: "GET" }).handler(async () => {

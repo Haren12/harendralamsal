@@ -136,6 +136,7 @@ function AdminPage() {
                 <th className="px-4 py-3 text-left">Title</th>
                 <th className="px-4 py-3 text-left">Category</th>
                 <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Views</th>
                 <th className="px-4 py-3 text-left">Updated</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
@@ -160,6 +161,12 @@ function AdminPage() {
                         <EyeOff className="h-3 w-3" /> Draft
                       </span>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs font-semibold">
+                      <Eye className="h-3.5 w-3.5 text-accent" />
+                      {p.views_count.toLocaleString()}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
                     {new Date(p.updated_at).toLocaleDateString()}

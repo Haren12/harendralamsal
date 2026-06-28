@@ -64,6 +64,7 @@ export type Database = {
           title_en: string
           title_ne: string
           updated_at: string
+          views_count: number
         }
         Insert: {
           author_id?: string | null
@@ -90,6 +91,7 @@ export type Database = {
           title_en?: string
           title_ne?: string
           updated_at?: string
+          views_count?: number
         }
         Update: {
           author_id?: string | null
@@ -116,6 +118,7 @@ export type Database = {
           title_en?: string
           title_ne?: string
           updated_at?: string
+          views_count?: number
         }
         Relationships: [
           {
@@ -153,6 +156,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_blog_post_view: {
+        Args: {
+          post_slug: string
+        }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

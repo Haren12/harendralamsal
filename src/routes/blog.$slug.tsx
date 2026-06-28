@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Calendar, Clock, Tag, Share2, Twitter, Facebook, Linkedin } from "lucide-react";
+import { useEffect } from "react";
+import { ArrowLeft, Calendar, Clock, Eye, Tag, Share2, Twitter, Facebook, Linkedin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { getPublishedPost, listPublishedPosts } from "@/lib/blog.functions";
+import { getPublishedPost, incrementPostView, listPublishedPosts } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/blog/$slug")({
@@ -84,6 +85,7 @@ function PostPage() {
   const { slug } = Route.useParams();
   const { post: loaderPost } = Route.useLoaderData();
   const getPost = useServerFn(getPublishedPost);
+  const countView = useServerFn(incrementPostView);
   const listPosts = useServerFn(listPublishedPosts);
 
   const postQ = useQuery({
@@ -96,6 +98,17 @@ function PostPage() {
   const post = postQ.data;
   const { lang, t } = useI18n();
   const ne = lang === "ne";
+
+  useEffect(() => {
+    const key = `viewed-post:${slug}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    countView({ data: { slug } })
+      .then(() => postQ.refetch())
+      .catch(() => {
+        sessionStorage.removeItem(key);
+      });
+  }, [countView, postQ, slug]);
 
   if (postQ.isError) {
     return (
@@ -155,6 +168,10 @@ function PostPage() {
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" /> {post.reading_minutes} {t("common.minRead")}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Eye className="h-3.5 w-3.5" /> {post.views_count.toLocaleString(ne ? "ne-NP" : "en-US")}{" "}
+              {ne ? "भ्यु" : "views"}
             </span>
           </div>
 

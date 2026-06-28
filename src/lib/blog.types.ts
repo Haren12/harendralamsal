@@ -20,6 +20,7 @@ export type BlogPost = {
   tags: string[];
   lang: "en" | "ne" | "both";
   reading_minutes: number;
+  views_count: number;
   seo_title: string | null;
   seo_description: string | null;
   focus_keyword: string | null;
