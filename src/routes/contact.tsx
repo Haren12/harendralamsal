@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Mail, MessageCircle, MapPin, Github, Twitter, Linkedin, Send } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { sendContactLead } from "@/lib/contact.functions";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +29,7 @@ export const Route = createFileRoute("/contact")({
 const schema = z.object({
   name: z.string().trim().min(2, "Name too short").max(80),
   email: z.string().trim().email("Invalid email").max(160),
+  phone: z.string().trim().max(40).optional(),
   subject: z.string().trim().min(2).max(120),
   message: z.string().trim().min(10, "Message too short").max(2000),
 });
@@ -34,10 +37,12 @@ const schema = z.object({
 function ContactPage() {
   const { lang } = useI18n();
   const ne = lang === "ne";
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const sendLead = useServerFn(sendContactLead);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
+  const [fallback, setFallback] = useState<{ mailtoUrl: string; whatsappUrl: string } | null>(null);
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
@@ -45,15 +50,29 @@ function ContactPage() {
       return;
     }
     setSending(true);
-    setTimeout(() => {
-      toast.success(
-        ne
-          ? "सन्देश प्राप्त भयो! म छिट्टै जवाफ दिनेछु।"
-          : "Message received! I'll get back to you shortly.",
-      );
-      setForm({ name: "", email: "", subject: "", message: "" });
+    setFallback(null);
+
+    try {
+      const result = await sendLead({ data: parsed.data });
+
+      if (result.emailSent || result.whatsappSent) {
+        toast.success(
+          ne
+            ? "सन्देश प्राप्त भयो! म छिट्टै जवाफ दिनेछु।"
+            : "Message received! I'll get back to you shortly.",
+        );
+      } else {
+        toast.info(ne ? "सन्देश पठाउन एउटा विकल्प छान्नुहोस्।" : "Choose a direct send option.");
+      }
+      if (!result.emailSent || !result.whatsappSent) {
+        setFallback({ mailtoUrl: result.mailtoUrl, whatsappUrl: result.whatsappUrl });
+      }
+      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send message");
+    } finally {
       setSending(false);
-    }, 700);
+    }
   }
 
   return (
@@ -145,15 +164,25 @@ function ContactPage() {
               />
             </Field>
           </div>
-          <Field label={ne ? "विषय" : "Subject"}>
-            <input
-              value={form.subject}
-              onChange={(e) => setForm({ ...form, subject: e.target.value })}
-              maxLength={120}
-              required
-              className="input"
-            />
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={ne ? "फोन / WhatsApp" : "Phone / WhatsApp"}>
+              <input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                maxLength={40}
+                className="input"
+              />
+            </Field>
+            <Field label={ne ? "विषय" : "Subject"}>
+              <input
+                value={form.subject}
+                onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                maxLength={120}
+                required
+                className="input"
+              />
+            </Field>
+          </div>
           <Field label={ne ? "सन्देश" : "Message"}>
             <textarea
               value={form.message}
@@ -164,6 +193,29 @@ function ContactPage() {
               className="input resize-y"
             />
           </Field>
+          {fallback && (
+            <div className="rounded-xl border border-accent/30 bg-accent/10 p-4 text-sm text-foreground">
+              <p className={cn("font-semibold", ne && "font-nepali")}>
+                {ne ? "सिधै पठाउनुहोस्:" : "Send directly:"}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a
+                  href={fallback.whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                </a>
+                <a
+                  href={fallback.mailtoUrl}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground"
+                >
+                  <Mail className="h-3.5 w-3.5" /> Email
+                </a>
+              </div>
+            </div>
+          )}
           <button
             type="submit"
             disabled={sending}
