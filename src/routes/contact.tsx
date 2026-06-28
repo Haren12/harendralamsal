@@ -31,7 +31,7 @@ const schema = z.object({
   email: z.string().trim().email("Invalid email").max(160),
   phone: z.string().trim().max(40).optional(),
   subject: z.string().trim().min(2).max(120),
-  message: z.string().trim().min(10, "Message too short").max(2000),
+  message: z.string().trim().min(3, "Please write a message").max(2000),
 });
 
 function ContactPage() {
@@ -40,7 +40,6 @@ function ContactPage() {
   const sendLead = useServerFn(sendContactLead);
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
-  const [fallback, setFallback] = useState<{ mailtoUrl: string; whatsappUrl: string } | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,24 +49,25 @@ function ContactPage() {
       return;
     }
     setSending(true);
-    setFallback(null);
 
     try {
       const result = await sendLead({ data: parsed.data });
+      const sent = result.smsSent || result.emailSent || result.whatsappSent;
 
-      if (result.emailSent || result.whatsappSent) {
+      if (sent) {
         toast.success(
           ne
             ? "सन्देश प्राप्त भयो! म छिट्टै जवाफ दिनेछु।"
             : "Message received! I'll get back to you shortly.",
         );
+        setForm({ name: "", email: "", phone: "", subject: "", message: "" });
       } else {
-        toast.info(ne ? "सन्देश पठाउन एउटा विकल्प छान्नुहोस्।" : "Choose a direct send option.");
+        toast.error(
+          ne
+            ? "Direct SMS/email service setup भएको छैन।"
+            : "Direct SMS/email service is not configured yet.",
+        );
       }
-      if (!result.emailSent || !result.whatsappSent) {
-        setFallback({ mailtoUrl: result.mailtoUrl, whatsappUrl: result.whatsappUrl });
-      }
-      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not send message");
     } finally {
@@ -203,29 +203,6 @@ function ContactPage() {
               className="input resize-y"
             />
           </Field>
-          {fallback && (
-            <div className="rounded-xl border border-accent/30 bg-accent/10 p-4 text-sm text-foreground">
-              <p className={cn("font-semibold", ne && "font-nepali")}>
-                {ne ? "सिधै पठाउनुहोस्:" : "Send directly:"}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <a
-                  href={fallback.whatsappUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
-                </a>
-                <a
-                  href={fallback.mailtoUrl}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground"
-                >
-                  <Mail className="h-3.5 w-3.5" /> Email
-                </a>
-              </div>
-            </div>
-          )}
           <button
             type="submit"
             disabled={sending}

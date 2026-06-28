@@ -3,13 +3,14 @@ import { z } from "zod";
 
 const CONTACT_EMAIL = "harendralamsal4140@gmail.com";
 const CONTACT_WHATSAPP = "9779823587535";
+const CONTACT_SMS = "+9779823587535";
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, "Name too short").max(80),
   email: z.string().trim().email("Invalid email").max(160),
   phone: z.string().trim().max(40).optional().default(""),
   subject: z.string().trim().min(2).max(120),
-  message: z.string().trim().min(10, "Message too short").max(2000),
+  message: z.string().trim().min(3, "Please write a message").max(2000),
 });
 
 type ContactInput = z.infer<typeof contactSchema>;
@@ -27,16 +28,6 @@ function leadText(data: ContactInput) {
   ]
     .filter(Boolean)
     .join("\n");
-}
-
-function mailtoUrl(data: ContactInput) {
-  const subject = encodeURIComponent(`Hire request: ${data.subject}`);
-  const body = encodeURIComponent(leadText(data));
-  return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-}
-
-function whatsappUrl(data: ContactInput) {
-  return `https://wa.me/${CONTACT_WHATSAPP}?text=${encodeURIComponent(leadText(data))}`;
 }
 
 async function sendEmail(data: ContactInput) {
@@ -62,6 +53,42 @@ async function sendEmail(data: ContactInput) {
   if (!response.ok) {
     const message = await response.text();
     throw new Error(`Email notification failed: ${message}`);
+  }
+
+  return { sent: true };
+}
+
+async function sendSms(data: ContactInput) {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const from = process.env.TWILIO_FROM_NUMBER;
+  const to = process.env.CONTACT_SMS_TO || CONTACT_SMS;
+
+  if (!accountSid || !authToken || !from) {
+    return { sent: false, reason: "Twilio SMS is not configured" };
+  }
+
+  const body = new URLSearchParams({
+    From: from,
+    To: to,
+    Body: leadText(data).slice(0, 1500),
+  });
+
+  const response = await fetch(
+    `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${btoa(`${accountSid}:${authToken}`)}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body,
+    },
+  );
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`SMS notification failed: ${message}`);
   }
 
   return { sent: true };
@@ -105,6 +132,11 @@ export const sendContactLead = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const issues: string[] = [];
 
+    const sms = await sendSms(data).catch((error) => {
+      issues.push(error instanceof Error ? error.message : "SMS notification failed");
+      return { sent: false };
+    });
+
     const email = await sendEmail(data).catch((error) => {
       issues.push(error instanceof Error ? error.message : "Email notification failed");
       return { sent: false };
@@ -115,14 +147,14 @@ export const sendContactLead = createServerFn({ method: "POST" })
       return { sent: false };
     });
 
+    if (!sms.sent) issues.push("SMS provider is not configured");
     if (!email.sent) issues.push("Email provider is not configured");
     if (!whatsapp.sent) issues.push("WhatsApp auto-send is not configured");
 
     return {
+      smsSent: sms.sent,
       emailSent: email.sent,
       whatsappSent: whatsapp.sent,
-      mailtoUrl: mailtoUrl(data),
-      whatsappUrl: whatsappUrl(data),
       issues: [...new Set(issues)],
     };
   });
