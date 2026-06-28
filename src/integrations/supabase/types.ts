@@ -48,13 +48,17 @@ export type Database = {
           created_at: string
           excerpt_en: string
           excerpt_ne: string
+          external_references: string[]
+          focus_keyword: string | null
           id: string
+          internal_link_suggestions: string[]
           lang: string
           published: boolean
           published_at: string | null
           reading_minutes: number
           seo_description: string | null
           seo_title: string | null
+          secondary_keywords: string[]
           slug: string
           tags: string[]
           title_en: string
@@ -70,13 +74,17 @@ export type Database = {
           created_at?: string
           excerpt_en?: string
           excerpt_ne?: string
+          external_references?: string[]
+          focus_keyword?: string | null
           id?: string
+          internal_link_suggestions?: string[]
           lang?: string
           published?: boolean
           published_at?: string | null
           reading_minutes?: number
           seo_description?: string | null
           seo_title?: string | null
+          secondary_keywords?: string[]
           slug: string
           tags?: string[]
           title_en?: string
@@ -92,13 +100,17 @@ export type Database = {
           created_at?: string
           excerpt_en?: string
           excerpt_ne?: string
+          external_references?: string[]
+          focus_keyword?: string | null
           id?: string
+          internal_link_suggestions?: string[]
           lang?: string
           published?: boolean
           published_at?: string | null
           reading_minutes?: number
           seo_description?: string | null
           seo_title?: string | null
+          secondary_keywords?: string[]
           slug?: string
           tags?: string[]
           title_en?: string

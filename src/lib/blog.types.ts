@@ -22,6 +22,10 @@ export type BlogPost = {
   reading_minutes: number;
   seo_title: string | null;
   seo_description: string | null;
+  focus_keyword: string | null;
+  secondary_keywords: string[];
+  internal_link_suggestions: string[];
+  external_references: string[];
   published: boolean;
   published_at: string | null;
   created_at: string;

@@ -8,7 +8,9 @@ import type { BlogPost, BlogCategory } from "./blog.types";
 const POST_SELECT = `
   id, slug, title_en, title_ne, excerpt_en, excerpt_ne, body_en, body_ne,
   cover_image_url, category_id, tags, lang, reading_minutes,
-  seo_title, seo_description, published, published_at, created_at, updated_at,
+  seo_title, seo_description, focus_keyword, secondary_keywords,
+  internal_link_suggestions, external_references,
+  published, published_at, created_at, updated_at,
   category:blog_categories(name_en, name_ne, slug)
 `;
 
@@ -79,7 +81,6 @@ async function getUserEmailFromAuth(supabase: any) {
 
 async function assertAdmin(supabase: any, userId: string, claims?: { email?: string | null }) {
   const normalizedEmail = getNormalizedEmail(claims);
-  const isConfiguredAdmin = !!normalizedEmail && configuredAdminEmails.includes(normalizedEmail);
 
   const adminLookupClient = await getAdminLookupClient();
   const roleSources = [adminLookupClient, supabase].filter(Boolean) as any[];
@@ -99,15 +100,12 @@ async function assertAdmin(supabase: any, userId: string, claims?: { email?: str
     }
   }
 
-  let emailFromAuth: string | null = null;
-  if (!normalizedEmail) {
-    emailFromAuth = await getUserEmailFromAuth(supabase);
-  }
+  const emailFromAuth = await getUserEmailFromAuth(supabase);
 
   const finalEmail = normalizedEmail ?? emailFromAuth;
   const finalIsConfiguredAdmin = !!finalEmail && configuredAdminEmails.includes(finalEmail);
 
-  if (roleData || isConfiguredAdmin || finalIsConfiguredAdmin) return;
+  if (roleData || finalIsConfiguredAdmin) return;
   throw new Error("Forbidden: admin role required");
 }
 
@@ -154,7 +152,9 @@ export const checkIsAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const normalizedEmail = getNormalizedEmail(context.claims);
-    const isConfiguredAdmin = !!normalizedEmail && configuredAdminEmails.includes(normalizedEmail);
+    const emailFromAuth = await getUserEmailFromAuth(context.supabase);
+    const finalEmail = normalizedEmail ?? emailFromAuth;
+    const isConfiguredAdmin = !!finalEmail && configuredAdminEmails.includes(finalEmail);
 
     const adminLookupClient = await getAdminLookupClient();
     const roleSources = [adminLookupClient, context.supabase].filter(Boolean) as any[];
@@ -174,21 +174,11 @@ export const checkIsAdmin = createServerFn({ method: "GET" })
       }
     }
 
-    if (!hasRole && !isConfiguredAdmin && normalizedEmail) {
-      const emailFromAuth = await getUserEmailFromAuth(context.supabase);
-      const finalIsConfiguredAdmin =
-        !!emailFromAuth && configuredAdminEmails.includes(emailFromAuth);
-      return { isAdmin: finalIsConfiguredAdmin };
-    }
-
-    if (!hasRole && !isConfiguredAdmin) {
-      const emailFromAuth = await getUserEmailFromAuth(context.supabase);
-      const finalIsConfiguredAdmin =
-        !!emailFromAuth && configuredAdminEmails.includes(emailFromAuth);
-      return { isAdmin: finalIsConfiguredAdmin };
-    }
-
-    return { isAdmin: hasRole || isConfiguredAdmin };
+    return {
+      isAdmin: hasRole || isConfiguredAdmin,
+      email: finalEmail,
+      allowedEmails: configuredAdminEmails,
+    };
   });
 
 export const adminListPosts = createServerFn({ method: "GET" })
@@ -237,6 +227,10 @@ const postInputSchema = z.object({
   reading_minutes: z.number().int().min(1).max(120).default(5),
   seo_title: z.string().max(200).nullable().optional(),
   seo_description: z.string().max(400).nullable().optional(),
+  focus_keyword: z.string().max(120).nullable().optional(),
+  secondary_keywords: z.array(z.string().max(80)).max(30).default([]),
+  internal_link_suggestions: z.array(z.string().max(300)).max(30).default([]),
+  external_references: z.array(z.string().max(500)).max(30).default([]),
   published: z.boolean().default(false),
   published_at: z.string().nullable().optional(),
 });

@@ -20,9 +20,15 @@ export const Route = createFileRoute("/blog/$slug")({
     if (!p) return {};
     const title = p.seo_title || p.title_en || p.title_ne;
     const desc = p.seo_description || p.excerpt_en || p.excerpt_ne;
+    const keywords = [
+      p.focus_keyword,
+      ...p.secondary_keywords,
+      ...p.tags,
+    ].filter(Boolean).join(", ");
     const meta: any[] = [
       { title: `${title} — Harendra Lamsal` },
       { name: "description", content: desc },
+      ...(keywords ? [{ name: "keywords", content: keywords }] : []),
       { property: "og:title", content: title },
       { property: "og:description", content: desc },
       { property: "og:type", content: "article" },
@@ -50,7 +56,8 @@ export const Route = createFileRoute("/blog/$slug")({
             image: p.cover_image_url ?? undefined,
             author: { "@type": "Person", name: "Harendra Lamsal" },
             articleSection: p.category?.name_en,
-            keywords: p.tags.join(", "),
+            keywords,
+            citation: p.external_references.length > 0 ? p.external_references : undefined,
           }),
         },
       ],

@@ -58,6 +58,26 @@ function AdminPage() {
       <div className="container-page py-20 text-center">
         <h1 className="text-2xl font-bold">Access denied</h1>
         <p className="mt-2 text-muted-foreground">Your account does not have admin privileges.</p>
+        <div className="mx-auto mt-5 max-w-lg rounded-xl border border-border bg-card p-4 text-left text-sm">
+          {roleQ.isError ? (
+            <p className="text-destructive">
+              Admin check failed: {roleQ.error.message || "Please sign in again."}
+            </p>
+          ) : (
+            <>
+              <p>
+                <span className="font-semibold text-foreground">Signed in as:</span>{" "}
+                <span className="text-muted-foreground">{roleQ.data?.email ?? "unknown"}</span>
+              </p>
+              <p className="mt-2">
+                <span className="font-semibold text-foreground">Admin email:</span>{" "}
+                <span className="text-muted-foreground">
+                  {roleQ.data?.allowedEmails?.join(", ") ?? "not configured"}
+                </span>
+              </p>
+            </>
+          )}
+        </div>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => signOut()}
