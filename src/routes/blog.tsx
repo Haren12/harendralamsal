@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -25,8 +25,17 @@ export const Route = createFileRoute("/blog")({
     ],
     links: [{ rel: "canonical", href: "/blog" }],
   }),
-  component: BlogIndex,
+  component: BlogRoute,
 });
+
+function BlogRoute() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+
+  if (normalizedPath !== "/blog") return <Outlet />;
+
+  return <BlogIndex />;
+}
 
 function BlogIndex() {
   const { t, lang } = useI18n();
