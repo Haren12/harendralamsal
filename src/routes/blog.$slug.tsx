@@ -3,9 +3,39 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
 import { ArrowLeft, Calendar, Clock, Eye, Tag, Share2, Twitter, Facebook, Linkedin } from "lucide-react";
+import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getPublishedPost, incrementPostView, listPublishedPosts } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
+
+const SITE_ORIGIN = "https://harendralamsal.com";
+
+function getPostUrl(slug: string) {
+  if (typeof window !== "undefined") {
+    return new URL(`/blog/${slug}`, window.location.origin).toString();
+  }
+  return `${SITE_ORIGIN}/blog/${slug}`;
+}
+
+async function sharePost(title: string, url: string) {
+  if (typeof navigator === "undefined") return;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, url });
+      return;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url);
+    toast.success("Article link copied");
+  } catch {
+    toast.error("Could not copy article link");
+  }
+}
 
 export const Route = createFileRoute("/blog/$slug")({
   loader: async ({ params, context }) => {
@@ -126,6 +156,25 @@ function PostPage() {
   }
 
   const showNe = ne && post.lang !== "en";
+  const postTitle = showNe ? post.title_ne || post.title_en : post.title_en || post.title_ne;
+  const postUrl = getPostUrl(post.slug);
+  const shareLinks = [
+    {
+      Icon: Twitter,
+      label: "Share on X",
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(postTitle)}&url=${encodeURIComponent(postUrl)}`,
+    },
+    {
+      Icon: Facebook,
+      label: "Share on Facebook",
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`,
+    },
+    {
+      Icon: Linkedin,
+      label: "Share on LinkedIn",
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`,
+    },
+  ];
   const related = (relatedQ.data ?? [])
     .filter((p) => p.slug !== post.slug && p.category?.slug === post.category?.slug)
     .slice(0, 3);
@@ -181,7 +230,7 @@ function PostPage() {
               showNe && "font-nepali",
             )}
           >
-            {showNe ? post.title_ne || post.title_en : post.title_en || post.title_ne}
+            {postTitle}
           </h1>
 
           <div className="mt-6 flex items-center gap-3 border-y border-border py-4">
@@ -193,14 +242,28 @@ function PostPage() {
               <p className="text-xs text-muted-foreground">Website Developer · Blogger</p>
             </div>
             <div className="flex gap-1">
-              {[Twitter, Facebook, Linkedin, Share2].map((Icon, i) => (
-                <button
-                  key={i}
+              {shareLinks.map(({ Icon, label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  title={label}
+                  target="_blank"
+                  rel="noreferrer"
                   className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground hover:text-accent"
                 >
                   <Icon className="h-3.5 w-3.5" />
-                </button>
+                </a>
               ))}
+              <button
+                type="button"
+                aria-label="Share article"
+                title="Share article"
+                onClick={() => sharePost(postTitle, postUrl)}
+                className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground hover:text-accent"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
 
