@@ -79,9 +79,6 @@ function Hero() {
                 className="absolute inset-0 h-full w-full object-cover"
                 loading="eager"
               />
-              <div className="absolute left-5 top-5 rounded-full border border-accent/30 bg-background/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-accent backdrop-blur">
-                AI-ready builds
-              </div>
               <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between text-primary-foreground">
                 <div>
                   <p className="text-sm font-semibold">Harendra Lamsal</p>
