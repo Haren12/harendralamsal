@@ -151,7 +151,7 @@ function ContactPage() {
             </p>
             <div className="mt-3 flex gap-2">
               {[
-                { Icon: Github, href: "#", label: "GitHub" },
+                { Icon: Github, href: "https://github.com/harendralamsal", label: "GitHub" },
                 {
                   Icon: Facebook,
                   href: "https://www.facebook.com/harendra.lamsala",

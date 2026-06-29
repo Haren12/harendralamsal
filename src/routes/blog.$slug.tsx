@@ -12,12 +12,12 @@ import {
   Twitter,
   Facebook,
   Linkedin,
-  MessageCircle,
   Send,
   Mail,
   LinkIcon,
   X,
 } from "lucide-react";
+import { FaWhatsapp as WhatsApp } from "react-icons/fa";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getPublishedPost, incrementPostView, listPublishedPosts } from "@/lib/blog.functions";
@@ -48,8 +48,6 @@ function getShareHref(kind: string, { title, description, url }: SharePayload) {
   switch (kind) {
     case "facebook":
       return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-    case "messenger":
-      return `fb-messenger://share/?link=${encodedUrl}`;
     case "whatsapp":
       return `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
     case "x":
@@ -88,8 +86,7 @@ function SharePopup({
   const [visible, setVisible] = useState(open);
   const shareItems = [
     { kind: "facebook", label: "Facebook", Icon: Facebook },
-    { kind: "messenger", label: "Messenger", Icon: MessageCircle },
-    { kind: "whatsapp", label: "WhatsApp", Icon: MessageCircle },
+    { kind: "whatsapp", label: "WhatsApp", Icon: WhatsApp },
     { kind: "x", label: "X", Icon: Twitter },
     { kind: "telegram", label: "Telegram", Icon: Send },
     { kind: "linkedin", label: "LinkedIn", Icon: Linkedin },
