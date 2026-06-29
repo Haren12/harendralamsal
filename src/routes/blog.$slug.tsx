@@ -17,7 +17,7 @@ import {
   LinkIcon,
   X,
 } from "lucide-react";
-import { FaWhatsapp as WhatsApp } from "react-icons/fa";
+import { FaWhatsapp as WhatsApp } from "react-icons/fa6";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getPublishedPost, incrementPostView, listPublishedPosts } from "@/lib/blog.functions";
