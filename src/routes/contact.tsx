@@ -76,23 +76,60 @@ function ContactPage() {
   const ne = lang === "ne";
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [fallback, setFallback] = useState<ContactForm | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  function onSubmit(e: React.FormEvent) {
+  // Server-side send (Resend/Twilio/WhatsApp Cloud API) + UI fallback links
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy) return;
+
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
 
-    const links = fallbackLinks(parsed.data);
-    setFallback(parsed.data);
-    window.open(links.whatsapp, "_blank", "noopener,noreferrer");
-    toast.success(
-      ne
-        ? "WhatsApp खुल्दैछ। नखुलेमा तलको Email वा SMS विकल्प प्रयोग गर्नुहोस्।"
-        : "Opening WhatsApp. If it does not open, use the email or SMS option below.",
-    );
+    const data = parsed.data;
+    setFallback(data);
+    setBusy(true);
+
+    try {
+      // Dynamically import to avoid bundling server-only code into the client bundle.
+      const { sendContactLead } = await import("@/lib/contact.functions");
+
+      const result = await sendContactLead({ data });
+      const anySuccess = Boolean(result?.smsSent || result?.emailSent || result?.whatsappSent);
+
+      if (result?.issues?.length) {
+        toast.error(
+          ne
+            ? `केही समस्याहरू आयो: ${result.issues.join("، ")}`
+            : `Some providers failed: ${result.issues.join(", ")}`,
+        );
+      }
+
+      if (anySuccess) {
+        toast.success(
+          ne
+            ? "सन्देश पठाइयो। तपाईंको अनुरोधको जवाफ चाँडै आउँछ।"
+            : "Message sent. You’ll receive a response soon.",
+        );
+      } else {
+        toast.error(
+          ne
+            ? "प्रोभाइडरहरू उपलब्ध छैनन्। तलका विकल्पबाट सम्पर्क गर्नुहोस्।"
+            : "No providers configured. Use the options below to contact.",
+        );
+      }
+    } catch (err) {
+      toast.error(ne ? "पठाउन सकेन। तलका विकल्प प्रयोग गर्नुहोस्।" : "Could not send. Use the options below.");
+    } finally {
+      setBusy(false);
+
+      // Best-effort: keep current UX by trying WhatsApp link open in a new tab.
+      const links = fallbackLinks(data);
+      window.open(links.whatsapp, "_blank", "noopener,noreferrer");
+    }
   }
 
   function clearForm() {
@@ -232,10 +269,11 @@ function ContactPage() {
             </Field>
             <button
               type="submit"
+              disabled={busy}
               className="tech-button inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-60"
             >
               <span className={ne ? "font-nepali" : ""}>
-                {ne ? "WhatsApp बाट पठाउनुहोस्" : "Send via WhatsApp"}
+                {busy ? (ne ? "पठाउँदैछ…" : "Sending…") : ne ? "WhatsApp बाट पठाउनुहोस्" : "Send via WhatsApp"}
               </span>
               <Send className="h-4 w-4" />
             </button>
