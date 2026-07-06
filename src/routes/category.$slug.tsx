@@ -12,16 +12,41 @@ function CategoryPage() {
 
   const getPosts = useServerFn(listPostsByCategory);
 
-  const postsQ = useQuery({
-    queryKey: ["categoryPosts", slug],
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ["category", slug],
     queryFn: () => getPosts({ data: { slug } }),
   });
 
+  if (isLoading) {
+    return (
+      <div className="container-page py-20">
+        Loading...
+      </div>
+    );
+  }
+
   return (
     <div className="container-page py-20">
-      <h1>Category: {slug}</h1>
+      <h1 className="text-4xl font-bold mb-8">
+        Category: {slug}
+      </h1>
 
-      <p>Total Posts: {postsQ.data?.length ?? 0}</p>
+      <div className="space-y-6">
+        {posts?.map((post) => (
+          <div
+            key={post.id}
+            className="border rounded-xl p-6"
+          >
+            <h2 className="text-2xl font-bold">
+              {post.title_en}
+            </h2>
+
+            <p className="mt-2 text-gray-500">
+              {post.excerpt_en}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
