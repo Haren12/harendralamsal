@@ -4,6 +4,32 @@ import { listPostsByCategory } from "@/lib/blog.functions";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/category/$slug")({
+  head: ({ params }) => ({
+    meta: [
+      {
+        title: `${params.slug} Articles | Harendra Lamsal`,
+      },
+      {
+        name: "description",
+        content: `Browse all articles in the ${params.slug} category.`,
+      },
+      {
+        property: "og:title",
+        content: `${params.slug} Articles`,
+      },
+      {
+        property: "og:url",
+        content: `/category/${params.slug}`,
+      },
+    ],
+    links: [
+      {
+        rel: "canonical",
+        href: `/category/${params.slug}`,
+      },
+    ],
+  }),
+
   component: CategoryPage,
 });
 
