@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listPostsByCategory } from "@/lib/blog.functions";
 import { createFileRoute } from "@tanstack/react-router";
+import { getCategoryBySlug } from "@/lib/blog.functions";
 
 export const Route = createFileRoute("/category/$slug")({
   head: ({ params }) => ({
@@ -43,6 +44,13 @@ function CategoryPage() {
     queryFn: () => getPosts({ data: { slug } }),
   });
 
+  const getCategory = useServerFn(getCategoryBySlug);
+
+const { data: category } = useQuery({
+  queryKey: ["category-info", slug],
+  queryFn: () => getCategory({ data: { slug } }),
+});
+
   if (isLoading) {
     return (
       <div className="container-page py-20">
@@ -52,27 +60,31 @@ function CategoryPage() {
   }
 
   return (
-    <div className="container-page py-20">
-      <h1 className="text-4xl font-bold mb-8">
-        Category: {slug}
-      </h1>
+  <div className="container-page py-20">
+  <h1 className="text-4xl font-bold">
+    {category?.name_en ?? slug}
+  </h1>
 
-      <div className="space-y-6">
-        {posts?.map((post) => (
-          <div
-            key={post.id}
-            className="border rounded-xl p-6"
-          >
-            <h2 className="text-2xl font-bold">
-              {post.title_en}
-            </h2>
+  <p className="mt-2 text-gray-500">
+    {posts?.length ?? 0} Articles
+  </p>
 
-            <p className="mt-2 text-gray-500">
-              {post.excerpt_en}
-            </p>
-          </div>
-        ))}
+  <div className="mt-10 space-y-6">
+    {posts?.map((post) => (
+      <div
+        key={post.id}
+        className="border rounded-xl p-6"
+      >
+        <h2 className="text-2xl font-bold">
+          {post.title_en}
+        </h2>
+
+        <p className="mt-2 text-gray-500">
+          {post.excerpt_en}
+        </p>
       </div>
-    </div>
+    ))}
+  </div>
+</div>
   );
 }
