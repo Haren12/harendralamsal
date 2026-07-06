@@ -178,6 +178,25 @@ export const listCategoriesPublic = createServerFn({ method: "GET" }).handler(as
   return (data ?? []) as BlogCategory[];
 });
 
+export const listPostsByCategory = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) =>
+    z.object({ slug: z.string().min(1) }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    const supabase = await publicReadClient();
+
+    const { data: posts, error } = await supabase
+      .from("blog_posts")
+      .select(POST_SELECT)
+      .eq("published", true)
+      .eq("category.slug", data.slug)
+      .order("published_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    return (posts ?? []) as BlogPost[];
+  });
+
 // ---------- ADMIN ----------
 
 export const checkIsAdmin = createServerFn({ method: "GET" })
