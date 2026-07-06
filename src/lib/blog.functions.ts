@@ -178,6 +178,24 @@ export const listCategoriesPublic = createServerFn({ method: "GET" }).handler(as
   return (data ?? []) as BlogCategory[];
 });
 
+export const getCategoryBySlug = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) =>
+    z.object({ slug: z.string().min(1) }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    const supabase = publicClient();
+
+    const { data: category, error } = await supabase
+      .from("blog_categories")
+      .select("id, slug, name_en, name_ne")
+      .eq("slug", data.slug)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+
+    return category;
+  });
+
 export const listPostsByCategory = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
     z.object({ slug: z.string().min(1) }).parse(d)
