@@ -153,11 +153,16 @@ function BlogIndex() {
                     ) : (
                       <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-70" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    {p.category && (
-                      <div className="absolute left-3 top-3 rounded-full border border-border bg-background/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground backdrop-blur">
-                        {ne ? p.category.name_ne : p.category.name_en}
-                      </div>
+                   {p.category && (
+  <Link
+    to="/category/$slug"
+    params={{ slug: p.category.slug }}
+    className="absolute left-3 top-3 rounded-full border border-border bg-background/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground backdrop-blur hover:border-accent hover:text-accent"
+    onClick={(e) => e.stopPropagation()}
+  >
+    {ne ? p.category.name_ne : p.category.name_en}
+  </Link>
+)}
                     )}
                   </div>
                   <div className="p-5">
