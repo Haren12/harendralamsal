@@ -186,11 +186,16 @@ export const listPostsByCategory = createServerFn({ method: "GET" })
     const supabase = await publicReadClient();
 
     const { data: posts, error } = await supabase
-      .from("blog_posts")
-      .select(POST_SELECT)
-      .eq("published", true)
-      .eq("category.slug", data.slug)
-      .order("published_at", { ascending: false });
+  .from("blog_posts")
+  .select(
+    `
+      ${POST_SELECT},
+      blog_categories!inner(slug)
+    `
+  )
+  .eq("published", true)
+  .eq("blog_categories.slug", data.slug)
+  .order("published_at", { ascending: false });
 
     if (error) throw new Error(error.message);
 
