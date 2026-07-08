@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Clock, ArrowUpRight } from "lucide-react";
@@ -15,8 +15,6 @@ export const Route = createFileRoute("/category/$slug")({
           data: { slug: params.slug },
         }),
     });
-
-    if (!category) throw notFound();
 
     const posts = await context.queryClient.ensureQueryData({
       queryKey: ["category", params.slug],
@@ -90,6 +88,7 @@ function CategoryPage() {
   }
 
   const displayName = (ne ? category?.name_ne : category?.name_en) ?? category?.name_en ?? slug.replace(/-/g, " ");
+  const hasPosts = (posts?.length ?? 0) > 0;
 
   return (
     <>
@@ -114,8 +113,20 @@ function CategoryPage() {
       </section>
 
       <section className="container-page py-12">
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {posts?.map((post) => {
+        {!hasPosts ? (
+          <div className="surface-card p-8 text-center">
+            <h2 className={cn("text-xl font-bold", ne && "font-nepali")}>
+              {ne ? "अहिलेसम्म लेख छैन" : "No articles yet"}
+            </h2>
+            <p className={cn("mt-2 text-sm text-muted-foreground", ne && "font-nepali")}>
+              {ne
+                ? "यो श्रेणीमा अहिले कुनै लेख प्रकाशित गरिएको छैन।"
+                : "This category does not have any published articles yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {posts?.map((post) => {
             const showNe = ne && post.lang !== "en";
 
             return (
@@ -184,7 +195,8 @@ function CategoryPage() {
               </Link>
             );
           })}
-        </div>
+          </div>
+        )}
       </section>
     </>
   );
