@@ -216,6 +216,13 @@ export const listPostsByCategory = createServerFn({ method: "GET" })
   .order("published_at", { ascending: false });
 
     if (error) throw new Error(error.message);
+    console.table(
+  posts?.map((p) => ({
+    title: p.title_en,
+    category_id: p.category_id,
+    category: (p as any).category?.slug,
+  }))
+);
 
     return (posts ?? []) as BlogPost[];
   });
