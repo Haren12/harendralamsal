@@ -196,28 +196,37 @@ export const getCategoryBySlug = createServerFn({ method: "GET" })
     return category;
   });
 
-.handler(async ({ data }) => {
-  const supabase = await publicReadClient();
 
-  const { data: category, error: categoryError } = await supabase
-    .from("blog_categories")
-    .select("id")
-    .eq("slug", data.slug)
-    .single();
+export const listPostsByCategory = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) =>
+    z.object({ slug: z.string().min(1) }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    const supabase = await publicReadClient();
 
-  if (categoryError) throw new Error(categoryError.message);
+    const { data: posts, error } = await supabase
+  .from("blog_posts")
+  .select(
+    `
+      ${POST_SELECT},
+      blog_categories!inner(slug)
+    `
+  )
+  .eq("published", true)
+  .eq("blog_categories.slug", data.slug)
+  .order("published_at", { ascending: false });
 
-  const { data: posts, error } = await supabase
-    .from("blog_posts")
-    .select(POST_SELECT)
-    .eq("published", true)
-    .eq("category_id", category.id)
-    .order("published_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    console.table(
+  posts?.map((p) => ({
+    title: p.title_en,
+    category_id: p.category_id,
+    category: (p as any).category?.slug,
+  }))
+);
 
-  if (error) throw new Error(error.message);
-
-  return (posts ?? []) as BlogPost[];
-});
+    return (posts ?? []) as BlogPost[];
+  });
 
 // ---------- ADMIN ----------
 
