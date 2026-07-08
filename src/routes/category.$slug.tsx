@@ -109,28 +109,35 @@ const { data: category } = useQuery({
     {posts?.map((post) => {
       const showNe = ne && post.lang !== "en";
 
-      return (
-        <Link
-          key={post.id}
-          to="/blog/$slug"
-          params={{ slug: post.slug }}
-          className="surface-card group overflow-hidden"
-        >
-          <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-            {post.cover_image_url ? (
-              <img
-                src={post.cover_image_url}
-                alt=""
-                loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-            ) : (
-              <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-70" />
-            )}
+    return (
+  <Link
+    key={post.id}
+    to="/blog/$slug"
+    params={{ slug: post.slug }}
+    className="surface-card group overflow-hidden"
+  >
+    <div className="relative aspect-[16/10] overflow-hidden bg-muted">
 
-            <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          </div>
+      {post.cover_image_url ? (
+        <img
+          src={post.cover_image_url}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+      ) : (
+        <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-70" />
+      )}
 
+      <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      {post.category && (
+        <div className="absolute left-3 top-3 rounded-full border border-border bg-background/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground backdrop-blur">
+          {ne ? post.category.name_ne : post.category.name_en}
+        </div>
+      )}
+
+    </div>
           <div className="p-5">
             <h3
               className={cn(
