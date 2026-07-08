@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Clock, ArrowUpRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { getCategoryBySlug, listPostsByCategory } from "@/lib/blog.functions";
+import { getCategoryBySlug, listCategoriesPublic, listPostsByCategory } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/category/$slug")({
@@ -70,6 +70,7 @@ function CategoryPage() {
 
   const getPosts = useServerFn(listPostsByCategory);
   const getCategory = useServerFn(getCategoryBySlug);
+  const listCategories = useServerFn(listCategoriesPublic);
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ["category", slug],
@@ -79,6 +80,11 @@ function CategoryPage() {
   const { data: category } = useQuery({
     queryKey: ["category-info", slug],
     queryFn: () => getCategory({ data: { slug } }),
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ["publicCats"],
+    queryFn: () => listCategories(),
   });
 
   if (isLoading) {
@@ -113,6 +119,35 @@ function CategoryPage() {
       </section>
 
       <section className="container-page py-12">
+        <div className="mb-8">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className={cn("text-xl font-bold", ne && "font-nepali")}>
+                {ne ? "सम्बन्धित श्रेणीहरू" : "Related categories"}
+              </h2>
+              <p className={cn("mt-1 text-sm text-muted-foreground", ne && "font-nepali")}>
+                {ne
+                  ? "थप लेखहरूका लागि अन्य श्रेणीहरू खोल्नुहोस्।"
+                  : "Explore other categories for more articles."}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {categories
+              ?.filter((c) => c.slug !== slug)
+              .map((c) => (
+                <Link
+                  key={c.id}
+                  to="/category/$slug"
+                  params={{ slug: c.slug }}
+                  className="rounded-full border border-border bg-card px-3.5 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-accent/40 hover:text-foreground"
+                >
+                  <span className={ne ? "font-nepali" : ""}>{ne ? c.name_ne : c.name_en}</span>
+                </Link>
+              ))}
+          </div>
+        </div>
+
         {!hasPosts ? (
           <div className="surface-card p-8 text-center">
             <h2 className={cn("text-xl font-bold", ne && "font-nepali")}>
