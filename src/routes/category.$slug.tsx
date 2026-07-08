@@ -87,19 +87,16 @@ const { data: category } = useQuery({
             ? category?.name_ne ?? category?.name_en ?? slug
             : category?.name_en ?? slug}
         </h1>
-
-        <p
-          className={cn(
-            "mt-6 max-w-2xl text-lg text-muted-foreground",
-            ne && "font-nepali",
-          )}
-        >
-          {ne
-            ? category?.description_ne ??
-              "यस श्रेणीका सबै लेखहरू यहाँ उपलब्ध छन्।"
-            : category?.description_en ??
-              "Browse all articles in this category."}
-        </p>
+<p
+  className={cn(
+    "mt-6 max-w-2xl text-lg text-muted-foreground",
+    ne && "font-nepali",
+  )}
+>
+  {ne
+    ? "यस श्रेणीका सबै लेखहरू यहाँ उपलब्ध छन्।"
+    : "Browse all articles in this category."}
+</p>
 
         <div className="mt-6 inline-flex rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground">
           {posts?.length ?? 0} {ne ? "लेख" : "Articles"}
