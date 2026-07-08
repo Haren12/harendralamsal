@@ -50,7 +50,6 @@ function BlogIndex() {
   const catsQ = useQuery({ queryKey: ["publicCats"], queryFn: () => listCats() });
 
   const posts = useMemo(() => postsQ.data ?? [], [postsQ.data]);
-  const categories = catsQ.data ?? [];
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -68,17 +67,6 @@ function BlogIndex() {
   }, [q, catSlug, posts]);
   const featuredPost = filtered[0];
   const restPosts = featuredPost ? filtered.slice(1) : filtered;
-  const groupedByCategory = useMemo(
-    () =>
-      categories
-        .map((category) => ({
-          ...category,
-          posts: posts.filter((post) => post.category?.slug === category.slug),
-        }))
-        .filter((category) => category.posts.length > 0),
-    [categories, posts],
-  );
-  const showGroupedView = q.trim().length === 0 && catSlug === "All";
 
   return (
     <>
@@ -144,33 +132,6 @@ function BlogIndex() {
             <p className="col-span-full py-16 text-center text-muted-foreground">
               {posts.length === 0 ? "No posts published yet." : "No articles match your search."}
             </p>
-          ) : showGroupedView ? (
-            <div className="space-y-12">
-              {groupedByCategory.map((category) => (
-                <section key={category.slug}>
-                  <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                      <h2 className={cn("text-2xl font-black tracking-tight", ne && "font-nepali")}>
-                        {ne ? category.name_ne : category.name_en}
-                      </h2>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {category.posts.length} {category.posts.length === 1 ? "article" : "articles"}
-                      </p>
-                    </div>
-                    <Pill active={false} onClick={() => setCatSlug(category.slug)}>
-                      <span className={ne ? "font-nepali" : ""}>
-                        {ne ? "सबै हेर्नुहोस्" : "View all"}
-                      </span>
-                    </Pill>
-                  </div>
-                  <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-                    {category.posts.slice(0, 3).map((post) => (
-                      <BlogCard key={post.id} post={post} ne={ne} t={t} />
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
           ) : (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {restPosts.map((post) => (
