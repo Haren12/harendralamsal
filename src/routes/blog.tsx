@@ -50,6 +50,7 @@ function BlogIndex() {
   const catsQ = useQuery({ queryKey: ["publicCats"], queryFn: () => listCats() });
 
   const posts = useMemo(() => postsQ.data ?? [], [postsQ.data]);
+  const categories = catsQ.data ?? [];
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -67,6 +68,17 @@ function BlogIndex() {
   }, [q, catSlug, posts]);
   const featuredPost = filtered[0];
   const restPosts = featuredPost ? filtered.slice(1) : filtered;
+  const groupedByCategory = useMemo(
+    () =>
+      categories
+        .map((category) => ({
+          ...category,
+          posts: posts.filter((post) => post.category?.slug === category.slug),
+        }))
+        .filter((category) => category.posts.length > 0),
+    [categories, posts],
+  );
+  const showGroupedView = q.trim().length === 0 && catSlug === "All";
 
   return (
     <>
@@ -125,86 +137,121 @@ function BlogIndex() {
 
         {featuredPost && <FeaturedArticle post={featuredPost} ne={ne} t={t} />}
 
-        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10">
           {postsQ.isLoading ? (
             <p className="col-span-full py-16 text-center text-muted-foreground">Loading…</p>
           ) : filtered.length === 0 ? (
             <p className="col-span-full py-16 text-center text-muted-foreground">
               {posts.length === 0 ? "No posts published yet." : "No articles match your search."}
             </p>
-          ) : (
-            restPosts.map((p) => {
-              const showNe = ne && p.lang !== "en";
-              return (
-                <Link
-                  key={p.id}
-                  to="/blog/$slug"
-                  params={{ slug: p.slug }}
-                  className="surface-card group overflow-hidden"
-                >
-                  <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-                    {p.cover_image_url ? (
-                      <img
-                        src={p.cover_image_url}
-                        alt=""
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-70" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    {p.category && (
-                      <div className="absolute left-3 top-3 rounded-full border border-border bg-background/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground backdrop-blur">
-                        {ne ? p.category.name_ne : p.category.name_en}
-                      </div>
-
-
-
-
-
-                    )}
-                  </div>
-                  <div className="p-5">
-                    <h3
-                      className={cn(
-                        "text-base font-bold leading-snug tracking-tight group-hover:text-accent",
-                        showNe && "font-nepali",
-                      )}
-                    >
-                      {showNe ? p.title_ne || p.title_en : p.title_en || p.title_ne}
-                    </h3>
-                    <p
-                      className={cn(
-                        "mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground",
-                        showNe && "font-nepali",
-                      )}
-                    >
-                      {showNe ? p.excerpt_ne || p.excerpt_en : p.excerpt_en || p.excerpt_ne}
-                    </p>
-                    <div className="mt-4 flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
-                      <span>
-                        {p.published_at
-                          ? new Date(p.published_at).toLocaleDateString(ne ? "ne-NP" : "en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : ""}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-1">
-                        <Clock className="h-3 w-3 text-accent" />
-                        {p.reading_minutes} {t("common.minRead")}
-                      </span>
+          ) : showGroupedView ? (
+            <div className="space-y-12">
+              {groupedByCategory.map((category) => (
+                <section key={category.slug}>
+                  <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <h2 className={cn("text-2xl font-black tracking-tight", ne && "font-nepali")}>
+                        {ne ? category.name_ne : category.name_en}
+                      </h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {category.posts.length} {category.posts.length === 1 ? "article" : "articles"}
+                      </p>
                     </div>
+                    <Pill active={false} onClick={() => setCatSlug(category.slug)}>
+                      <span className={ne ? "font-nepali" : ""}>
+                        {ne ? "सबै हेर्नुहोस्" : "View all"}
+                      </span>
+                    </Pill>
                   </div>
-                </Link>
-              );
-            })
+                  <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                    {category.posts.slice(0, 3).map((post) => (
+                      <BlogCard key={post.id} post={post} ne={ne} t={t} />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {restPosts.map((post) => (
+                <BlogCard key={post.id} post={post} ne={ne} t={t} />
+              ))}
+            </div>
           )}
         </div>
       </section>
     </>
+  );
+}
+
+function BlogCard({
+  post,
+  ne,
+  t,
+}: {
+  post: NonNullable<Awaited<ReturnType<typeof listPublishedPosts>>>[number];
+  ne: boolean;
+  t: (key: Parameters<ReturnType<typeof useI18n>["t"]>[0]) => string;
+}) {
+  const showNe = ne && post.lang !== "en";
+  return (
+    <Link
+      to="/blog/$slug"
+      params={{ slug: post.slug }}
+      className="surface-card group overflow-hidden"
+    >
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        {post.cover_image_url ? (
+          <img
+            src={post.cover_image_url}
+            alt=""
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="h-full w-full bg-[image:var(--gradient-primary)] opacity-70" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        {post.category && (
+          <div className="absolute left-3 top-3 rounded-full border border-border bg-background/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground backdrop-blur">
+            {ne ? post.category.name_ne : post.category.name_en}
+          </div>
+        )}
+      </div>
+      <div className="p-5">
+        <h3
+          className={cn(
+            "text-base font-bold leading-snug tracking-tight group-hover:text-accent",
+            showNe && "font-nepali",
+          )}
+        >
+          {showNe ? post.title_ne || post.title_en : post.title_en || post.title_ne}
+        </h3>
+        <p
+          className={cn(
+            "mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground",
+            showNe && "font-nepali",
+          )}
+        >
+          {showNe ? post.excerpt_ne || post.excerpt_en : post.excerpt_en || post.excerpt_ne}
+        </p>
+        <div className="mt-4 flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
+          <span>
+            {post.published_at
+              ? new Date(post.published_at).toLocaleDateString(ne ? "ne-NP" : "en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : ""}
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-1">
+            <Clock className="h-3 w-3 text-accent" />
+            {post.reading_minutes} {t("common.minRead")}
+          </span>
+        </div>
+      </div>
+    </Link>
   );
 }
 
