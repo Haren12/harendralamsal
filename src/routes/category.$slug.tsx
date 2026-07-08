@@ -92,27 +92,7 @@ function CategoryPage() {
 
   return (
     <>
-      <section className="hero-bg">
-        <div className="container-page py-16 md:py-24">
-          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-accent">
-            <span className="h-px w-6 bg-accent" />
-            {ne ? "श्रेणी" : "Category"}
-          </p>
-
-          <h1 className={cn("mt-4 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl", ne && "font-nepali")}>
-            {displayName}
-          </h1>
-          <p className={cn("mt-6 max-w-2xl text-lg text-muted-foreground", ne && "font-nepali")}>
-            {ne ? "यस श्रेणीका सबै लेखहरू यहाँ उपलब्ध छन्।" : "Browse all articles in this category."}
-          </p>
-
-          <div className="mt-6 inline-flex rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground">
-            {posts?.length ?? 0} {ne ? "लेख" : "Articles"}
-          </div>
-        </div>
-      </section>
-
-      <section className="container-page py-12">
+      <section className="container-page py-12 md:py-16">
         {!hasPosts ? (
           <div className="surface-card p-8 text-center">
             <h2 className={cn("text-xl font-bold", ne && "font-nepali")}>
