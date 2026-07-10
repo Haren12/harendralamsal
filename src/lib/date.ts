@@ -41,6 +41,27 @@ function formatBikramSambatDate(date: Date, style: DateStyle) {
   return `${year} ${monthName} ${day} गते`;
 }
 
+function toDevanagariDigits(value: string) {
+  return value.replace(/\d/g, (digit) => "०१२३४५६७८९"[Number(digit)] ?? digit);
+}
+
+function formatNepaliClockTime(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).formatToParts(date);
+
+  const hour = toDevanagariDigits(parts.find((part) => part.type === "hour")?.value ?? "");
+  const minute = toDevanagariDigits(parts.find((part) => part.type === "minute")?.value ?? "");
+  const dayPeriod = date.getHours() < 12 ? "बिहान" : date.getHours() < 18 ? "दिउँसो" : "साँझ";
+
+  return `${hour}:${minute} ${dayPeriod}`;
+}
+
+function formatNepaliWeekday(date: Date) {
+  return new Intl.DateTimeFormat("ne-NP-u-nu-deva", { weekday: "long" }).format(date);
+}
+
 export function formatDate(
   input: string | number | Date,
   lang: DateLang,
@@ -59,32 +80,28 @@ export function formatClockDate(input: string | number | Date, lang: DateLang) {
   const date = toDate(input);
   if (Number.isNaN(date.getTime())) return "";
 
-  return lang === "en"
-    ? date.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })
-    : formatBikramSambatDate(date, "long");
+  if (lang === "en") {
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+
+  return `${formatNepaliWeekday(date)}, ${formatBikramSambatDate(date, "long")}`;
 }
 
 export function formatClockTime(input: string | number | Date, lang: DateLang) {
   const date = toDate(input);
   if (Number.isNaN(date.getTime())) return "";
 
-  return date.toLocaleTimeString(lang === "en" ? "en-US" : "ne-NP", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
+  if (lang === "en") {
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
 
-export function formatClockDay(input: string | number | Date, lang: DateLang) {
-  const date = toDate(input);
-  if (Number.isNaN(date.getTime())) return "";
-
-  return date.toLocaleDateString(lang === "en" ? "en-US" : "ne-NP", {
-    weekday: "long",
-  });
+  return formatNepaliClockTime(date);
 }

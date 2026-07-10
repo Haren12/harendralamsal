@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Lock, Menu, X, Languages, Clock3, CalendarDays, Clock4 } from "lucide-react";
+import { Lock, Menu, X, Languages, Clock4, CalendarDays } from "lucide-react";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { formatClockDate, formatClockDay, formatClockTime } from "@/lib/date";
+import { formatClockDate, formatClockTime } from "@/lib/date";
 
 const navItems = [
   { to: "/about", key: "nav.about" },
@@ -57,25 +57,20 @@ function LiveClock() {
   }, []);
 
   const time = useMemo(() => formatClockTime(now, lang), [lang, now]);
-  const day = useMemo(() => formatClockDay(now, lang), [lang, now]);
   const date = useMemo(() => formatClockDate(now, lang), [lang, now]);
 
   return (
-    <div className="hidden items-center gap-2 rounded-2xl border border-cyan-400/20 bg-slate-950/50 px-3 py-2 text-[10px] font-semibold text-slate-200 shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_0_30px_rgba(34,211,238,0.12)] backdrop-blur-xl lg:flex">
+    <div className="hidden min-w-[240px] items-center gap-2 rounded-2xl border border-cyan-400/20 bg-slate-950/55 px-3 py-2 text-[10px] font-semibold text-slate-100 shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_0_30px_rgba(34,211,238,0.12)] backdrop-blur-xl lg:flex">
       <span className="grid h-7 w-7 place-items-center rounded-xl bg-cyan-400/10 text-cyan-300">
         <Clock4 className="h-3.5 w-3.5" aria-hidden />
       </span>
       <div className="min-w-0 leading-tight">
         <p className="text-[11px] tracking-[0.18em] text-cyan-100/90">{time}</p>
-        <p className={cn("truncate text-[10px] text-slate-400", lang === "ne" && "font-nepali")}>
-          {day}
+        <p className={cn("truncate text-[10px] text-slate-300", lang === "ne" && "font-nepali")}>
+          {date}
         </p>
       </div>
-      <span className="hidden h-8 w-px bg-white/10 sm:block" />
-      <span className="hidden max-w-[18ch] items-center gap-1 text-[10px] text-slate-300 sm:inline-flex">
-        <CalendarDays className="h-3.5 w-3.5 text-cyan-300" aria-hidden />
-        <span className={lang === "ne" ? "font-nepali" : ""}>{date}</span>
-      </span>
+      <CalendarDays className="ml-auto h-3.5 w-3.5 shrink-0 text-cyan-300/80" aria-hidden />
     </div>
   );
 }
