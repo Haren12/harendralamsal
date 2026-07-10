@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Lock, Menu, X, Languages } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Lock, Menu, X, Languages, Clock3 } from "lucide-react";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { formatClockDate, formatClockDay, formatClockTime } from "@/lib/date";
 
 const navItems = [
   { to: "/about", key: "nav.about" },
@@ -46,12 +47,45 @@ function LangSwitcher() {
   );
 }
 
+function LiveClock() {
+  const { lang } = useI18n();
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="hidden items-center gap-4 rounded-full border border-border bg-card/65 px-4 py-2 text-[11px] font-medium text-muted-foreground shadow-[var(--shadow-card)] backdrop-blur-xl lg:flex">
+      <span className="inline-flex items-center gap-2">
+        <Clock3 className="h-3.5 w-3.5 text-accent" aria-hidden />
+        <span className="uppercase tracking-[0.18em]">{formatClockTime(now, lang)}</span>
+      </span>
+      <span className="h-4 w-px bg-border" />
+      <span>{formatClockDay(now, lang)}</span>
+      <span className="h-4 w-px bg-border" />
+      <span>{formatClockDate(now, lang)}</span>
+    </div>
+  );
+}
+
 export function Header() {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/72 shadow-[0_1px_0_color-mix(in_oklab,var(--accent)_14%,transparent)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/62">
+      <div className="border-b border-border/60 bg-surface/40">
+        <div className="container-page flex items-center justify-between gap-3 py-2 text-[11px] text-muted-foreground">
+          <p className={cn("truncate", lang === "ne" && "font-nepali")}>
+            {lang === "ne"
+              ? "सम्पर्क र ज्ञान साझा गर्न तयार।"
+              : "Open for projects, collaboration, and practical knowledge sharing."}
+          </p>
+          <LiveClock />
+        </div>
+      </div>
       <div className="container-page grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3.5 md:flex md:justify-between">
         <Link to="/" className="group flex min-w-0 items-center gap-2.5">
           <span className="glow-border grid h-9 w-9 shrink-0 overflow-hidden rounded-xl bg-[image:var(--gradient-primary)] shadow-[var(--shadow-glow)] ring-1 ring-border">

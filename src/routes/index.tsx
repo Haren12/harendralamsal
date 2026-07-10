@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { skills, services, projects, posts, testimonials } from "@/lib/content";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/date";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -566,13 +567,7 @@ function LatestBlog() {
                 {lang === "ne" && p.lang !== "en" ? p.excerpt.ne : p.excerpt.en}
               </p>
               <div className="mt-4 flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
-                <span>
-                  {new Date(p.date).toLocaleDateString(lang === "ne" ? "ne-NP" : "en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
+                <span>{formatDate(p.date, lang, "short")}</span>
                 <span>
                   {p.readingMinutes} {t("common.minRead")}
                 </span>

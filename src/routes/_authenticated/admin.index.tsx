@@ -5,6 +5,7 @@ import { Plus, Edit3, Trash2, LogOut, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { adminListPosts, adminDeletePost } from "@/lib/blog.functions";
+import { formatDate } from "@/lib/date";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
@@ -121,7 +122,7 @@ function AdminPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {new Date(p.updated_at).toLocaleDateString()}
+                    {formatDate(p.updated_at, "en", "short")}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">

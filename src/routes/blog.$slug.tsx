@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getPublishedPost, incrementPostView, listPublishedPosts } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/date";
 
 const SITE_ORIGIN = "https://harendralamsal.com";
 
@@ -403,12 +404,7 @@ function PostPage() {
             )}
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-2.5 py-1 backdrop-blur">
               <Calendar className="h-3.5 w-3.5" />
-              {post.published_at &&
-                new Date(post.published_at).toLocaleDateString(ne ? "ne-NP" : "en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+              {post.published_at ? formatDate(post.published_at, ne ? "ne" : "en") : ""}
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-2.5 py-1 backdrop-blur">
               <Clock className="h-3.5 w-3.5" /> {post.reading_minutes} {t("common.minRead")}

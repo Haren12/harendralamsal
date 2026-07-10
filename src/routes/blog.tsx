@@ -6,6 +6,7 @@ import { ArrowUpRight, Clock, Search } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { listPublishedPosts, listCategoriesPublic } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/date";
 
 export const Route = createFileRoute("/blog")({
   head: () => ({
@@ -198,13 +199,7 @@ function BlogCard({
         </p>
         <div className="mt-4 flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
           <span>
-            {post.published_at
-              ? new Date(post.published_at).toLocaleDateString(ne ? "ne-NP" : "en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })
-              : ""}
+            {post.published_at ? formatDate(post.published_at, ne ? "ne" : "en", "short") : ""}
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-1">
             <Clock className="h-3 w-3 text-accent" />
