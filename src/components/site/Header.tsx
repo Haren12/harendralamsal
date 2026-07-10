@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Lock, Menu, X, Languages, Clock3 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Lock, Menu, X, Languages, Clock3, CalendarDays, Clock4 } from "lucide-react";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { formatClockDate, formatClockDay, formatClockTime } from "@/lib/date";
@@ -56,16 +56,26 @@ function LiveClock() {
     return () => window.clearInterval(timer);
   }, []);
 
+  const time = useMemo(() => formatClockTime(now, lang), [lang, now]);
+  const day = useMemo(() => formatClockDay(now, lang), [lang, now]);
+  const date = useMemo(() => formatClockDate(now, lang), [lang, now]);
+
   return (
-    <div className="hidden items-center gap-4 rounded-full border border-border bg-card/65 px-4 py-2 text-[11px] font-medium text-muted-foreground shadow-[var(--shadow-card)] backdrop-blur-xl lg:flex">
-      <span className="inline-flex items-center gap-2">
-        <Clock3 className="h-3.5 w-3.5 text-accent" aria-hidden />
-        <span className="uppercase tracking-[0.18em]">{formatClockTime(now, lang)}</span>
+    <div className="hidden items-center gap-2 rounded-2xl border border-cyan-400/20 bg-slate-950/50 px-3 py-2 text-[10px] font-semibold text-slate-200 shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_0_30px_rgba(34,211,238,0.12)] backdrop-blur-xl lg:flex">
+      <span className="grid h-7 w-7 place-items-center rounded-xl bg-cyan-400/10 text-cyan-300">
+        <Clock4 className="h-3.5 w-3.5" aria-hidden />
       </span>
-      <span className="h-4 w-px bg-border" />
-      <span>{formatClockDay(now, lang)}</span>
-      <span className="h-4 w-px bg-border" />
-      <span>{formatClockDate(now, lang)}</span>
+      <div className="min-w-0 leading-tight">
+        <p className="text-[11px] tracking-[0.18em] text-cyan-100/90">{time}</p>
+        <p className={cn("truncate text-[10px] text-slate-400", lang === "ne" && "font-nepali")}>
+          {day}
+        </p>
+      </div>
+      <span className="hidden h-8 w-px bg-white/10 sm:block" />
+      <span className="hidden max-w-[18ch] items-center gap-1 text-[10px] text-slate-300 sm:inline-flex">
+        <CalendarDays className="h-3.5 w-3.5 text-cyan-300" aria-hidden />
+        <span className={lang === "ne" ? "font-nepali" : ""}>{date}</span>
+      </span>
     </div>
   );
 }
@@ -75,18 +85,9 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/72 shadow-[0_1px_0_color-mix(in_oklab,var(--accent)_14%,transparent)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/62">
-      <div className="border-b border-border/60 bg-surface/40">
-        <div className="container-page flex items-center justify-between gap-3 py-2 text-[11px] text-muted-foreground">
-          <p className={cn("truncate", lang === "ne" && "font-nepali")}>
-            {lang === "ne"
-              ? "सम्पर्क र ज्ञान साझा गर्न तयार।"
-              : "Open for projects, collaboration, and practical knowledge sharing."}
-          </p>
-          <LiveClock />
-        </div>
-      </div>
-      <div className="container-page grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3.5 md:flex md:justify-between">
+    <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/85 shadow-[0_1px_0_rgba(255,255,255,0.03)] backdrop-blur-2xl supports-[backdrop-filter]:bg-slate-950/70">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+      <div className="container-page grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3 md:flex md:justify-between">
         <Link to="/" className="group flex min-w-0 items-center gap-2.5">
           <span className="glow-border grid h-9 w-9 shrink-0 overflow-hidden rounded-xl bg-[image:var(--gradient-primary)] shadow-[var(--shadow-glow)] ring-1 ring-border">
             <img
@@ -109,6 +110,10 @@ export function Header() {
             </span>
           </span>
         </Link>
+
+        <div className="order-3 hidden md:block">
+          <LiveClock />
+        </div>
 
         <nav className="hidden items-center gap-1 md:flex">
           {navItems.map((n) => (
@@ -152,7 +157,7 @@ export function Header() {
 
         <button
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card/70 shadow-[var(--shadow-card)] backdrop-blur md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-slate-900/80 text-slate-100 shadow-[0_0_0_1px_rgba(34,211,238,0.08)] backdrop-blur md:hidden"
           aria-label="Toggle menu"
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -160,7 +165,7 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="border-t border-border bg-background/92 backdrop-blur-2xl md:hidden">
+        <div className="border-t border-slate-800 bg-slate-950/95 backdrop-blur-2xl md:hidden">
           <div className="container-page flex flex-col gap-1 py-3">
             {navItems.map((n) => (
               <Link

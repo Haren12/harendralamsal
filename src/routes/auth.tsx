@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Cpu, LockKeyhole, ShieldCheck, TerminalSquare, Waves } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { checkIsAdmin } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
@@ -60,12 +61,10 @@ function AuthPage() {
           return;
         }
       } catch {
-        // Treat a failed admin check like a non-admin session on the login screen.
+        // treat as unauthenticated on the login screen
       }
       await supabase.auth.signOut();
-      if (active) {
-        toast.error("Your account is not authorized for the admin dashboard.");
-      }
+      if (active) toast.error("Your account is not authorized for the admin dashboard.");
     });
 
     return () => {
@@ -101,83 +100,156 @@ function AuthPage() {
   }
 
   return (
-    <section className="hero-bg flex min-h-[70vh] items-center justify-center px-5 py-16">
-      <div className="surface-card glow-border w-full max-w-md p-8">
-        <div className="mb-5 inline-flex rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-accent">
-          Secure console
-        </div>
-        <h1 className="text-2xl font-black tracking-tight">Admin sign in</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Sign in with an existing administrator account to manage blog posts.
-        </p>
-        {registrationDisabled && (
-          <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm font-medium text-foreground">
-            Public registration is disabled. Please contact the administrator.
+    <section className="relative min-h-[calc(100vh-72px)] overflow-hidden bg-[#050816] px-4 py-10">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.16),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.12),transparent_35%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:36px_36px] opacity-30" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
+
+      <div className="relative mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative overflow-hidden rounded-[2rem] border border-cyan-400/15 bg-slate-950/75 p-8 shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_30px_100px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.1),transparent_30%)]" />
+          <div className="relative z-10 max-w-xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/8 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Secure console
+            </div>
+            <h1 className="mt-5 text-4xl font-black tracking-tight text-white sm:text-5xl">
+              Enter the newsroom command layer.
+            </h1>
+            <p className="mt-4 max-w-lg text-sm leading-relaxed text-slate-300 sm:text-base">
+              Sign in to access the editorial operations center, publish stories, tune SEO, and
+              manage the live site from a futuristic control surface.
+            </p>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {[
+                { icon: Cpu, title: "Realtime control", body: "Fast publishing and live updates." },
+                {
+                  icon: TerminalSquare,
+                  title: "Operator interface",
+                  body: "Designed like a premium SOC dashboard.",
+                },
+              ].map(({ icon: Icon, title, body }) => (
+                <div
+                  key={title}
+                  className="rounded-2xl border border-white/8 bg-white/5 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-400/10 text-cyan-200">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{title}</p>
+                      <p className="text-xs text-slate-400">{body}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
+          <div className="absolute -right-10 bottom-4 hidden rounded-[1.5rem] border border-cyan-400/20 bg-slate-900/70 px-4 py-3 text-[11px] text-slate-300 shadow-[0_0_40px_rgba(34,211,238,0.12)] lg:block">
+            <p className="flex items-center gap-2">
+              <Waves className="h-3.5 w-3.5 text-cyan-300" />
+              Encrypted admin lane active
+            </p>
+          </div>
+        </div>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Email
-            </span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              maxLength={160}
-              className="input w-full"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Password
-            </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              maxLength={72}
-              className="input w-full"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={busy}
-            className={cn(
-              "tech-button w-full rounded-full py-3 text-sm font-semibold disabled:opacity-60",
+        <div className="relative overflow-hidden rounded-[2rem] border border-cyan-400/20 bg-slate-950/80 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_30px_100px_rgba(0,0,0,0.65)] backdrop-blur-xl">
+          <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.1),transparent_45%)]" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-200/80">
+                  Access panel
+                </p>
+                <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
+                  Admin sign in
+                </h2>
+              </div>
+              <div className="grid h-12 w-12 place-items-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
+                <LockKeyhole className="h-5 w-5" />
+              </div>
+            </div>
+
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-400">
+              Use your administrator credentials to enter the control room. This interface is
+              optimized for clarity, security, and fast content operations.
+            </p>
+
+            {registrationDisabled && (
+              <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-3 text-sm text-amber-100">
+                Public registration is disabled. Please contact the administrator.
+              </div>
             )}
-          >
-            {busy ? "Please wait…" : "Sign in"}
-          </button>
-        </form>
 
-        <Link
-          to="/"
-          className="mt-6 block text-center text-xs text-muted-foreground hover:text-foreground"
-        >
-          ← Back to site
-        </Link>
+            <form onSubmit={onSubmit} className="mt-6 space-y-4">
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Email
+                </span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  maxLength={160}
+                  className="input-cyber w-full"
+                  placeholder="operator@example.com"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Password
+                </span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  maxLength={72}
+                  className="input-cyber w-full"
+                  placeholder="••••••••"
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={busy}
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-cyan-400/20 bg-[linear-gradient(135deg,rgba(34,211,238,0.2),rgba(59,130,246,0.18))] px-4 py-3 text-sm font-semibold text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_0_30px_rgba(34,211,238,0.16)] transition-all hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(34,211,238,0.14),0_0_40px_rgba(34,211,238,0.22)] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-300" />
+                {busy ? "Authenticating…" : "Enter control room"}
+              </button>
+            </form>
+
+            <Link
+              to="/"
+              className="mt-6 inline-flex items-center text-xs text-slate-400 transition-colors hover:text-cyan-200"
+            >
+              ← Back to site
+            </Link>
+          </div>
+        </div>
       </div>
 
       <style>{`
-        .input {
-          border-radius: 0.625rem;
-          border: 1px solid var(--color-border);
-          background: color-mix(in oklab, var(--color-card) 76%, transparent);
-          color: var(--color-foreground);
-          backdrop-filter: blur(16px);
-          padding: 0.7rem 0.9rem;
-          font-size: 0.9rem;
+        .input-cyber {
+          border-radius: 1rem;
+          border: 1px solid rgba(148, 163, 184, 0.18);
+          background: rgba(2, 6, 23, 0.92);
+          color: #e2e8f0;
+          padding: 0.82rem 0.95rem;
           outline: none;
-          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+          transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
         }
-        .input:focus {
-          border-color: var(--color-accent);
-          box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 20%, transparent);
+        .input-cyber::placeholder {
+          color: rgba(148, 163, 184, 0.55);
+        }
+        .input-cyber:focus {
+          border-color: rgba(34, 211, 238, 0.55);
+          box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12), 0 0 30px rgba(34, 211, 238, 0.12);
+          transform: translateY(-1px);
         }
       `}</style>
     </section>

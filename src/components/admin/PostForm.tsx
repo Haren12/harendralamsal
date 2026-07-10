@@ -1,8 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { FileText, Link as LinkIcon, Save, Search, Tags, Upload, X } from "lucide-react";
+import {
+  FileText,
+  Link as LinkIcon,
+  Save,
+  Search,
+  Tags,
+  Upload,
+  X,
+  WandSparkles,
+  PencilLine,
+  Image as ImageIcon,
+  Eye,
+  Clock3,
+  Globe,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -121,10 +135,17 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
   );
   const [autoSlug, setAutoSlug] = useState(!existing);
   const [uploading, setUploading] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(form));
 
   useEffect(() => {
     if (autoSlug && form.title_en) setForm((f) => ({ ...f, slug: slugify(f.title_en) }));
   }, [form.title_en, autoSlug]);
+
+  const dirty = useMemo(() => JSON.stringify(form) !== savedSnapshot, [form, savedSnapshot]);
+  const titlePreview = form.title_en || form.title_ne || "Untitled article";
+  const descPreview =
+    form.seo_description || form.excerpt_en || form.excerpt_ne || "Meta description preview";
+  const readingPreview = Math.max(form.reading_minutes || 1, 1);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -159,6 +180,7 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
       return createFn({ data: payload });
     },
     onSuccess: () => {
+      setSavedSnapshot(JSON.stringify(form));
       toast.success(existing ? "Post updated" : "Post created");
       navigate({ to: "/admin" });
     },
@@ -200,275 +222,352 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
         e.preventDefault();
         save.mutate();
       }}
-      className="grid gap-8 lg:grid-cols-[1fr_320px]"
+      className="space-y-6"
     >
-      <div className="space-y-5">
-        <Field label="Slug *">
-          <div className="flex gap-2">
+      <section className="overflow-hidden rounded-[2rem] border border-cyan-400/15 bg-slate-950/70 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_25px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">
+              <WandSparkles className="h-3.5 w-3.5" />
+              Editorial cockpit
+            </p>
+            <h1 className="mt-4 text-3xl font-black tracking-tight text-white sm:text-4xl">
+              {existing ? "Edit article" : "Build a new story"}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
+              Structured for focused writing on the left, operational controls on the right, with
+              live preview, SEO guidance, and autosave status cues.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
+            <StatusPill tone={dirty ? "warning" : "success"}>
+              {dirty ? "Unsaved changes" : "All changes saved"}
+            </StatusPill>
+            <StatusPill tone={uploading ? "warning" : "info"}>
+              {uploading ? "Uploading image" : "Ready"}
+            </StatusPill>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="space-y-5">
+          <Field label="Slug *">
+            <div className="flex gap-2">
+              <input
+                value={form.slug}
+                onChange={(e) => {
+                  setAutoSlug(false);
+                  setForm({ ...form, slug: slugify(e.target.value) });
+                }}
+                required
+                className="input flex-1"
+                placeholder="my-post-slug"
+              />
+              {autoSlug && <span className="text-xs text-muted-foreground self-center">auto</span>}
+            </div>
+          </Field>
+
+          <Field label="Title (English) *">
             <input
-              value={form.slug}
-              onChange={(e) => {
-                setAutoSlug(false);
-                setForm({ ...form, slug: slugify(e.target.value) });
-              }}
+              value={form.title_en}
+              onChange={(e) => setForm({ ...form, title_en: e.target.value })}
               required
-              className="input flex-1"
-              placeholder="my-post-slug"
+              maxLength={300}
+              className="input w-full"
             />
-            {autoSlug && <span className="text-xs text-muted-foreground self-center">auto</span>}
-          </div>
-        </Field>
+          </Field>
 
-        <Field label="Title (English) *">
-          <input
-            value={form.title_en}
-            onChange={(e) => setForm({ ...form, title_en: e.target.value })}
-            required
-            maxLength={300}
-            className="input w-full"
-          />
-        </Field>
+          <Field label="Title (Nepali)">
+            <input
+              value={form.title_ne}
+              onChange={(e) => setForm({ ...form, title_ne: e.target.value })}
+              maxLength={300}
+              className="input w-full font-nepali"
+            />
+          </Field>
 
-        <Field label="Title (Nepali)">
-          <input
-            value={form.title_ne}
-            onChange={(e) => setForm({ ...form, title_ne: e.target.value })}
-            maxLength={300}
-            className="input w-full font-nepali"
-          />
-        </Field>
+          <Field label="Excerpt (English)">
+            <textarea
+              value={form.excerpt_en}
+              onChange={(e) => setForm({ ...form, excerpt_en: e.target.value })}
+              rows={2}
+              maxLength={600}
+              className="input w-full"
+            />
+          </Field>
 
-        <Field label="Excerpt (English)">
-          <textarea
-            value={form.excerpt_en}
-            onChange={(e) => setForm({ ...form, excerpt_en: e.target.value })}
-            rows={2}
-            maxLength={600}
-            className="input w-full"
-          />
-        </Field>
+          <Field label="Excerpt (Nepali)">
+            <textarea
+              value={form.excerpt_ne}
+              onChange={(e) => setForm({ ...form, excerpt_ne: e.target.value })}
+              rows={2}
+              maxLength={600}
+              className="input w-full font-nepali"
+            />
+          </Field>
 
-        <Field label="Excerpt (Nepali)">
-          <textarea
-            value={form.excerpt_ne}
-            onChange={(e) => setForm({ ...form, excerpt_ne: e.target.value })}
-            rows={2}
-            maxLength={600}
-            className="input w-full font-nepali"
-          />
-        </Field>
+          <Field label="Body (English)">
+            <textarea
+              value={form.body_en}
+              onChange={(e) => setForm({ ...form, body_en: e.target.value })}
+              rows={14}
+              className="input w-full font-mono text-sm"
+              placeholder="Markdown / plain text supported"
+            />
+          </Field>
 
-        <Field label="Body (English)">
-          <textarea
-            value={form.body_en}
-            onChange={(e) => setForm({ ...form, body_en: e.target.value })}
-            rows={14}
-            className="input w-full font-mono text-sm"
-            placeholder="Markdown / plain text supported"
-          />
-        </Field>
+          <Field label="Body (Nepali)">
+            <textarea
+              value={form.body_ne}
+              onChange={(e) => setForm({ ...form, body_ne: e.target.value })}
+              rows={14}
+              className="input w-full font-nepali"
+            />
+          </Field>
 
-        <Field label="Body (Nepali)">
-          <textarea
-            value={form.body_ne}
-            onChange={(e) => setForm({ ...form, body_ne: e.target.value })}
-            rows={14}
-            className="input w-full font-nepali"
-          />
-        </Field>
-
-        <section className="seo-panel overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
-          <div className="flex flex-wrap items-center gap-3 border-b border-border bg-[image:var(--gradient-primary)] p-5 text-primary-foreground">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15">
-              <Search className="h-5 w-5" />
+          <section className="seo-panel overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
+            <div className="flex flex-wrap items-center gap-3 border-b border-border bg-[image:var(--gradient-primary)] p-5 text-primary-foreground">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15">
+                <Search className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-black">SEO & content planning</p>
+                <p className="text-xs text-primary-foreground/75">
+                  Meta data, keywords, and reference links for this post.
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-black">SEO & content planning</p>
-              <p className="text-xs text-primary-foreground/75">
-                Meta data, keywords, and reference links for this post.
-              </p>
-            </div>
-          </div>
 
-          <div className="grid gap-5 p-5 md:grid-cols-2">
-            <Field label="Meta Title">
-              <input
-                value={form.seo_title}
-                onChange={(e) => setForm({ ...form, seo_title: e.target.value })}
-                maxLength={200}
-                className="input w-full"
-                placeholder="Best title for Google search results"
-              />
-              <Meter count={form.seo_title.length} ideal="50-60 characters recommended" />
-            </Field>
-
-            <Field label="Focus Keyword">
-              <IconInput icon={Tags}>
+            <div className="grid gap-5 p-5 md:grid-cols-2">
+              <Field label="Meta Title">
                 <input
-                  value={form.focus_keyword}
-                  onChange={(e) => setForm({ ...form, focus_keyword: e.target.value })}
-                  maxLength={120}
-                  className="input input-with-icon w-full"
-                  placeholder="primary keyword"
+                  value={form.seo_title}
+                  onChange={(e) => setForm({ ...form, seo_title: e.target.value })}
+                  maxLength={200}
+                  className="input w-full"
+                  placeholder="Best title for Google search results"
                 />
-              </IconInput>
-            </Field>
+                <Meter count={form.seo_title.length} ideal="50-60 characters recommended" />
+              </Field>
 
-            <Field label="Meta Description" className="md:col-span-2">
-              <textarea
-                value={form.seo_description}
-                onChange={(e) => setForm({ ...form, seo_description: e.target.value })}
-                rows={3}
-                maxLength={400}
-                className="input w-full resize-y"
-                placeholder="Short search-result description for this article"
+              <Field label="Focus Keyword">
+                <IconInput icon={Tags}>
+                  <input
+                    value={form.focus_keyword}
+                    onChange={(e) => setForm({ ...form, focus_keyword: e.target.value })}
+                    maxLength={120}
+                    className="input input-with-icon w-full"
+                    placeholder="primary keyword"
+                  />
+                </IconInput>
+              </Field>
+
+              <Field label="Meta Description" className="md:col-span-2">
+                <textarea
+                  value={form.seo_description}
+                  onChange={(e) => setForm({ ...form, seo_description: e.target.value })}
+                  rows={3}
+                  maxLength={400}
+                  className="input w-full resize-y"
+                  placeholder="Short search-result description for this article"
+                />
+                <Meter count={form.seo_description.length} ideal="140-160 characters recommended" />
+              </Field>
+
+              <Field label="Secondary Keywords">
+                <textarea
+                  value={form.secondary_keywords}
+                  onChange={(e) => setForm({ ...form, secondary_keywords: e.target.value })}
+                  rows={4}
+                  className="input w-full resize-y"
+                  placeholder="keyword one&#10;keyword two&#10;keyword three"
+                />
+              </Field>
+
+              <Field label="Internal Link Suggestions">
+                <textarea
+                  value={form.internal_link_suggestions}
+                  onChange={(e) => setForm({ ...form, internal_link_suggestions: e.target.value })}
+                  rows={4}
+                  className="input w-full resize-y"
+                  placeholder="/services&#10;/resources&#10;/blog/related-post"
+                />
+              </Field>
+
+              <Field label="External References" className="md:col-span-2">
+                <textarea
+                  value={form.external_references}
+                  onChange={(e) => setForm({ ...form, external_references: e.target.value })}
+                  rows={4}
+                  className="input w-full resize-y"
+                  placeholder="https://example.com/reference&#10;https://another-source.com/report"
+                />
+              </Field>
+            </div>
+          </section>
+        </div>
+
+        <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+          <div className="admin-card p-5">
+            <PanelTitle icon={PencilLine} label="Writing status" />
+            <div className="mt-4 grid gap-3">
+              <MiniStat label="Word count" value={countWords(form.body_en || form.body_ne)} />
+              <MiniStat label="Character count" value={(form.body_en || form.body_ne).length} />
+              <MiniStat label="Reading preview" value={`${readingPreview} min`} />
+            </div>
+          </div>
+
+          <div className="admin-card p-5">
+            <PanelTitle icon={Eye} label="Live preview" />
+            <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-slate-950/60">
+              <div className="aspect-[16/10] bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.2),transparent_42%),linear-gradient(135deg,rgba(2,6,23,0.95),rgba(15,23,42,0.95))] p-4">
+                {form.cover_image_url ? (
+                  <img
+                    src={form.cover_image_url}
+                    alt=""
+                    className="h-full w-full rounded-xl object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center rounded-xl border border-dashed border-cyan-400/20 bg-white/5 text-cyan-100/70">
+                    <ImageIcon className="h-10 w-10" />
+                  </div>
+                )}
+              </div>
+              <div className="space-y-3 p-4">
+                <div className="flex flex-wrap gap-2">
+                  <PreviewChip>{form.lang.toUpperCase()}</PreviewChip>
+                  <PreviewChip>{form.category_id ? "Category set" : "No category"}</PreviewChip>
+                  <PreviewChip>{form.published ? "Published" : "Draft"}</PreviewChip>
+                </div>
+                <h3 className="text-lg font-bold text-foreground">{titlePreview}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{descPreview}</p>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock3 className="h-3.5 w-3.5 text-accent" />
+                    {readingPreview} min read
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Globe className="h-3.5 w-3.5 text-accent" />
+                    SEO preview
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-card p-5">
+            <PanelTitle icon={FileText} label="Publish" />
+            <label className="mt-3 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.published}
+                onChange={(e) => setForm({ ...form, published: e.target.checked })}
               />
-              <Meter count={form.seo_description.length} ideal="140-160 characters recommended" />
-            </Field>
-
-            <Field label="Secondary Keywords">
-              <textarea
-                value={form.secondary_keywords}
-                onChange={(e) => setForm({ ...form, secondary_keywords: e.target.value })}
-                rows={4}
-                className="input w-full resize-y"
-                placeholder="keyword one&#10;keyword two&#10;keyword three"
+              Published
+            </label>
+            <Field label="Publish date" className="mt-4">
+              <input
+                type="datetime-local"
+                value={form.published_at}
+                onChange={(e) => setForm({ ...form, published_at: e.target.value })}
+                className="input w-full"
               />
             </Field>
+            <button
+              type="submit"
+              disabled={save.isPending || uploading}
+              className={cn(
+                "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[image:var(--gradient-accent)] py-2.5 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-glow)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] disabled:opacity-60",
+              )}
+            >
+              <Save className="h-4 w-4" />
+              {save.isPending ? "Saving…" : existing ? "Update post" : "Create post"}
+            </button>
+          </div>
 
-            <Field label="Internal Link Suggestions">
-              <textarea
-                value={form.internal_link_suggestions}
-                onChange={(e) => setForm({ ...form, internal_link_suggestions: e.target.value })}
-                rows={4}
-                className="input w-full resize-y"
-                placeholder="/services&#10;/resources&#10;/blog/related-post"
+          <div className="admin-card p-5">
+            <PanelTitle icon={Upload} label="Featured image" />
+            {form.cover_image_url ? (
+              <div className="mt-3 space-y-2">
+                <img
+                  src={form.cover_image_url}
+                  alt=""
+                  className="aspect-[16/10] w-full rounded-lg object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, cover_image_url: null })}
+                  className="inline-flex items-center gap-1 text-xs text-destructive hover:underline"
+                >
+                  <X className="h-3 w-3" /> Remove
+                </button>
+              </div>
+            ) : (
+              <label className="mt-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-background/50 p-6 text-center text-xs text-muted-foreground transition-all hover:border-accent hover:bg-accent/10 hover:text-foreground">
+                <Upload className="h-5 w-5" />
+                {uploading ? "Uploading…" : "Click to upload (max 5MB)"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={onFile}
+                  className="hidden"
+                  disabled={uploading}
+                />
+              </label>
+            )}
+          </div>
+
+          <div className="admin-card p-5">
+            <PanelTitle icon={LinkIcon} label="Post settings" />
+            <Field label="Category">
+              <select
+                value={form.category_id ?? ""}
+                onChange={(e) => setForm({ ...form, category_id: e.target.value || null })}
+                className="input w-full"
+              >
+                <option value="">— None —</option>
+                {catsQ.data?.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name_en}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Language" className="mt-4">
+              <select
+                value={form.lang}
+                onChange={(e) => setForm({ ...form, lang: getPostLang(e.target.value) })}
+                className="input w-full"
+              >
+                <option value="en">English</option>
+                <option value="ne">Nepali</option>
+                <option value="both">Both</option>
+              </select>
+            </Field>
+            <Field label="Reading minutes" className="mt-4">
+              <input
+                type="number"
+                min={1}
+                max={120}
+                value={form.reading_minutes}
+                onChange={(e) =>
+                  setForm({ ...form, reading_minutes: parseInt(e.target.value) || 5 })
+                }
+                className="input w-full"
               />
             </Field>
-
-            <Field label="External References" className="md:col-span-2">
-              <textarea
-                value={form.external_references}
-                onChange={(e) => setForm({ ...form, external_references: e.target.value })}
-                rows={4}
-                className="input w-full resize-y"
-                placeholder="https://example.com/reference&#10;https://another-source.com/report"
+            <Field label="Tags (comma separated)" className="mt-4">
+              <input
+                value={form.tags}
+                onChange={(e) => setForm({ ...form, tags: e.target.value })}
+                placeholder="seo, wordpress, nepal"
+                className="input w-full"
               />
             </Field>
           </div>
-        </section>
+        </aside>
       </div>
-
-      <aside className="space-y-5">
-        <div className="admin-card p-5">
-          <PanelTitle icon={FileText} label="Publish" />
-          <label className="mt-3 flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={form.published}
-              onChange={(e) => setForm({ ...form, published: e.target.checked })}
-            />
-            Published
-          </label>
-          <Field label="Publish date" className="mt-4">
-            <input
-              type="datetime-local"
-              value={form.published_at}
-              onChange={(e) => setForm({ ...form, published_at: e.target.value })}
-              className="input w-full"
-            />
-          </Field>
-          <button
-            type="submit"
-            disabled={save.isPending || uploading}
-            className={cn(
-              "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[image:var(--gradient-accent)] py-2.5 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-glow)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] disabled:opacity-60",
-            )}
-          >
-            <Save className="h-4 w-4" />
-            {save.isPending ? "Saving…" : existing ? "Update post" : "Create post"}
-          </button>
-        </div>
-
-        <div className="admin-card p-5">
-          <PanelTitle icon={Upload} label="Featured image" />
-          {form.cover_image_url ? (
-            <div className="mt-3 space-y-2">
-              <img
-                src={form.cover_image_url}
-                alt=""
-                className="aspect-[16/10] w-full rounded-lg object-cover"
-              />
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, cover_image_url: null })}
-                className="inline-flex items-center gap-1 text-xs text-destructive hover:underline"
-              >
-                <X className="h-3 w-3" /> Remove
-              </button>
-            </div>
-          ) : (
-            <label className="mt-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-background/50 p-6 text-center text-xs text-muted-foreground transition-all hover:border-accent hover:bg-accent/10 hover:text-foreground">
-              <Upload className="h-5 w-5" />
-              {uploading ? "Uploading…" : "Click to upload (max 5MB)"}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onFile}
-                className="hidden"
-                disabled={uploading}
-              />
-            </label>
-          )}
-        </div>
-
-        <div className="admin-card p-5">
-          <PanelTitle icon={LinkIcon} label="Post settings" />
-          <Field label="Category">
-            <select
-              value={form.category_id ?? ""}
-              onChange={(e) => setForm({ ...form, category_id: e.target.value || null })}
-              className="input w-full"
-            >
-              <option value="">— None —</option>
-              {catsQ.data?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name_en}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Language" className="mt-4">
-            <select
-              value={form.lang}
-              onChange={(e) => setForm({ ...form, lang: getPostLang(e.target.value) })}
-              className="input w-full"
-            >
-              <option value="en">English</option>
-              <option value="ne">Nepali</option>
-              <option value="both">Both</option>
-            </select>
-          </Field>
-          <Field label="Reading minutes" className="mt-4">
-            <input
-              type="number"
-              min={1}
-              max={120}
-              value={form.reading_minutes}
-              onChange={(e) => setForm({ ...form, reading_minutes: parseInt(e.target.value) || 5 })}
-              className="input w-full"
-            />
-          </Field>
-          <Field label="Tags (comma separated)" className="mt-4">
-            <input
-              value={form.tags}
-              onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              placeholder="seo, wordpress, nepal"
-              className="input w-full"
-            />
-          </Field>
-        </div>
-      </aside>
 
       <style>{`
         .input {
@@ -555,5 +654,42 @@ function Meter({ count, ideal }: { count: number; ideal: string }) {
       <span>{ideal}</span>
       <span className="font-semibold text-foreground/70">{count}</span>
     </p>
+  );
+}
+
+function countWords(text: string) {
+  return text.trim() ? text.trim().split(/\s+/).length : 0;
+}
+
+function StatusPill({
+  tone,
+  children,
+}: {
+  tone: "success" | "warning" | "info";
+  children: React.ReactNode;
+}) {
+  const styles =
+    tone === "success"
+      ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-100"
+      : tone === "warning"
+        ? "border-amber-400/20 bg-amber-400/10 text-amber-100"
+        : "border-cyan-400/20 bg-cyan-400/10 text-cyan-100";
+  return <span className={cn("rounded-full border px-3 py-1.5", styles)}>{children}</span>;
+}
+
+function MiniStat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+      <span className="text-xs uppercase tracking-[0.18em] text-slate-400">{label}</span>
+      <span className="text-sm font-semibold text-white">{value}</span>
+    </div>
+  );
+}
+
+function PreviewChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full border border-cyan-400/15 bg-cyan-400/10 px-2.5 py-1 text-[11px] text-cyan-100">
+      {children}
+    </span>
   );
 }
