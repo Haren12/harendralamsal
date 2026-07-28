@@ -43,8 +43,8 @@ function AboutPage() {
             )}
           >
            {ne
- ? "नेपालका एक फ्रन्टएन्ड वेब डेभलपर, जसले आधुनिक र SEO-friendly वेबसाइट बनाउँछन्।"
- : "A Frontend Web Developer from Nepal building modern, fast, and SEO-friendly websites."}
+             ? "नेपालका एक फ्रन्टएन्ड वेब डेभलपर, जसले आधुनिक र SEO-friendly वेबसाइट बनाउँछन्।"
+             : "A Frontend Web Developer from Nepal building modern, fast, and SEO-friendly websites."}
           </h1>
           <p
             className={cn(
@@ -52,9 +52,9 @@ function AboutPage() {
               ne && "font-nepali",
             )}
           >
-            {ne
-              ? "म हरेन्द्र लम्साल हुँ — एक स्व-प्रशिक्षित वेब डेभलपर, ब्लगर र डिजिटल क्रिएटर। मैले विगत ६ वर्षदेखि नेपाल र विश्वभरका व्यवसायहरूलाई आधुनिक वेबसाइट निर्माण गर्न मद्दत गर्दै आएको छु।"
-              : "I'm Harendra Lamsal — a self-taught web developer, blogger, and digital creator. For the past 6+ years I've helped businesses in Nepal and worldwide ship modern, fast websites."}
+           {ne
+             ? "म हरेन्द्र लम्साल हुँ — नेपालका एक फ्रन्टएन्ड वेब डेभलपर, ब्लगर र डिजिटल क्रिएटर। म React, TypeScript, WordPress र SEO-friendly वेबसाइट निर्माणमा विशेषज्ञता राख्छु। मैले नेपाल तथा विश्वभरका व्यवसायहरूका लागि आधुनिक, छिटो र प्रयोगमैत्री वेबसाइटहरू निर्माण गर्न सहयोग गर्दै आएको छु।"
+             : "I'm Harendra Lamsal — a Frontend Web Developer, blogger, and digital creator from Nepal. I specialize in React, TypeScript, WordPress, and SEO-friendly website development. I help businesses in Nepal and worldwide build modern, fast, and user-friendly websites."}
           </p>
         </div>
       </section>
