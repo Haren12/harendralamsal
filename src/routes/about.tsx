@@ -42,9 +42,9 @@ function AboutPage() {
               ne && "font-nepali",
             )}
           >
-            {ne
-              ? "नेपालका एक डेभलपर, जसले वेबलाई अलि सजिलो बनाउन खोज्छ।"
-              : "A developer from Nepal trying to make the web a little better."}
+           {ne
+ ? "नेपालका एक फ्रन्टएन्ड वेब डेभलपर, जसले आधुनिक र SEO-friendly वेबसाइट बनाउँछन्।"
+ : "A Frontend Web Developer from Nepal building modern, fast, and SEO-friendly websites."}
           </h1>
           <p
             className={cn(
