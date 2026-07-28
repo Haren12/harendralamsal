@@ -21,7 +21,12 @@ export const Route = createFileRoute("/about")({
       },
       { property: "og:url", content: "/about" },
     ],
-    links: [{ rel: "canonical", href: "/about" }],
+    links: [
+      {  
+        rel: "canonical",
+        href: "https://www.harendralamsal.name.np/about", 
+      }
+    ],
   }),
   component: AboutPage,
 });
@@ -44,7 +49,7 @@ function AboutPage() {
             )}
           >
            {ne
-             ? "नेपालका एक फ्रन्टएन्ड वेब डेभलपर, जसले आधुनिक र SEO-friendly वेबसाइट बनाउँछन्।"
+             ? "नेपालका एक फ्रन्टएन्ड वेब डेभलपर, जसले आधुनिक, छिटो र SEO-friendly वेबसाइटहरू निर्माण गर्छन्।"
              : "A Frontend Web Developer from Nepal building modern, fast, and SEO-friendly websites."}
           </h1>
           <p
