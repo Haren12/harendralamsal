@@ -7,16 +7,17 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Harendra Lamsal — Web Developer from Nepal" },
-      {
+      { title: "About Harendra Lamsal | Frontend Web Developer Nepal"  },
+     {
         name: "description",
         content:
-          "My story, journey, mission, and how I came to build websites and write about the web.",
-      },
+            "Harendra Lamsal is a Frontend Web Developer from Nepal specializing in React, TypeScript, WordPress, SEO, and modern website development.",
+       },
       { property: "og:title", content: "About Harendra Lamsal" },
       {
         property: "og:description",
-        content: "My story, journey, mission, and how I came to build websites.",
+        content:
+           "Harendra Lamsal is a Frontend Web Developer from Nepal specializing in React, TypeScript, WordPress, SEO, and modern website development.",
       },
       { property: "og:url", content: "/about" },
     ],
