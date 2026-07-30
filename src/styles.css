@@ -96,7 +96,8 @@
   --chart-5: oklch(0.72 0.19 50);
 
   /* Branded gradients & shadows */
-  --gradient-hero: radial-gradient(
+  --gradient-hero:
+    radial-gradient(
       1000px 620px at 82% -8%,
       color-mix(in oklab, var(--primary) 24%, transparent),
       transparent 60%
@@ -123,7 +124,8 @@
     var(--primary) 52%,
     var(--violet-glow) 100%
   );
-  --gradient-grid: linear-gradient(var(--border) 1px, transparent 1px),
+  --gradient-grid:
+    linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
   --gradient-card: linear-gradient(
     145deg,
@@ -132,9 +134,11 @@
   );
 
   --shadow-card: 0 1px 1px oklch(0 0 0 / 0.2), 0 18px 48px -28px oklch(0 0 0 / 0.72);
-  --shadow-elevated: 0 28px 80px -34px oklch(0 0 0 / 0.85),
+  --shadow-elevated:
+    0 28px 80px -34px oklch(0 0 0 / 0.85),
     0 0 44px -24px color-mix(in oklab, var(--accent) 70%, transparent);
-  --shadow-glow: 0 0 34px -10px color-mix(in oklab, var(--accent) 70%, transparent),
+  --shadow-glow:
+    0 0 34px -10px color-mix(in oklab, var(--accent) 70%, transparent),
     0 0 74px -36px color-mix(in oklab, var(--violet-glow) 75%, transparent);
 
   --sidebar: var(--surface);
@@ -186,7 +190,8 @@
   body {
     min-height: 100vh;
     background-color: var(--color-background);
-    background-image: radial-gradient(
+    background-image:
+      radial-gradient(
         circle at 18% -8%,
         color-mix(in oklab, var(--violet-glow) 20%, transparent),
         transparent 34rem
@@ -258,7 +263,10 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
   backdrop-filter: blur(20px);
-  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease,
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    border-color 0.25s ease,
     background 0.25s ease;
   &:hover {
     box-shadow: var(--shadow-elevated);
@@ -398,7 +406,10 @@
   box-shadow: var(--shadow-glow);
   background-image: var(--gradient-accent);
   color: var(--color-accent-foreground);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
   &:hover {
     transform: translateY(-1px) scale(1.015);
     filter: saturate(1.08);
@@ -408,6 +419,307 @@
 @utility subtle-grid {
   background-image: var(--gradient-grid);
   background-size: 42px 42px;
+}
+
+@layer components {
+  .rich-control {
+    display: inline-grid;
+    min-height: 2.25rem;
+    min-width: 2.25rem;
+    place-items: center;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in oklab, white 10%, transparent);
+    background: color-mix(in oklab, white 6%, transparent);
+    color: color-mix(in oklab, var(--foreground) 82%, transparent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition:
+      border-color 0.15s ease,
+      background 0.15s ease,
+      color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .rich-control:hover {
+    border-color: color-mix(in oklab, var(--accent) 42%, transparent);
+    background: color-mix(in oklab, var(--accent) 14%, transparent);
+    color: var(--foreground);
+    transform: translateY(-1px);
+  }
+
+  .rich-select {
+    min-height: 2.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in oklab, white 10%, transparent);
+    background: color-mix(in oklab, var(--background) 88%, white 12%);
+    padding-inline: 0.7rem;
+    color: var(--foreground);
+    font-size: 0.75rem;
+    font-weight: 700;
+    outline: none;
+  }
+
+  .rich-editor-content,
+  .article-content {
+    overflow-wrap: anywhere;
+  }
+
+  .rich-editor-content :where(h1, h2, h3, h4, h5, h6),
+  .article-content :where(h1, h2, h3, h4, h5, h6) {
+    margin-top: 1.35em;
+    margin-bottom: 0.55em;
+    color: var(--foreground);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: 0;
+  }
+
+  .rich-editor-content h1,
+  .article-content h1 {
+    font-size: clamp(2rem, 6vw, 3.25rem);
+  }
+
+  .rich-editor-content h2,
+  .article-content h2 {
+    font-size: clamp(1.65rem, 4vw, 2.35rem);
+  }
+
+  .rich-editor-content h3,
+  .article-content h3 {
+    font-size: 1.55rem;
+  }
+
+  .rich-editor-content h4,
+  .article-content h4 {
+    font-size: 1.3rem;
+  }
+
+  .rich-editor-content h5,
+  .article-content h5 {
+    font-size: 1.12rem;
+  }
+
+  .rich-editor-content h6,
+  .article-content h6 {
+    font-size: 1rem;
+    text-transform: uppercase;
+  }
+
+  .rich-editor-content p,
+  .article-content p {
+    margin-block: 0.9rem;
+  }
+
+  .rich-editor-content a,
+  .article-content a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+
+  .rich-editor-content blockquote,
+  .article-content blockquote {
+    margin-block: 1.35rem;
+    border-left: 4px solid var(--accent);
+    border-radius: 0.75rem;
+    background: color-mix(in oklab, var(--accent) 9%, transparent);
+    padding: 1rem 1.15rem;
+    color: color-mix(in oklab, var(--foreground) 88%, transparent);
+  }
+
+  .rich-editor-content :where(ul, ol),
+  .article-content :where(ul, ol) {
+    margin-block: 1rem;
+    padding-left: 1.45rem;
+  }
+
+  .rich-editor-content ul,
+  .article-content ul {
+    list-style: disc;
+  }
+
+  .rich-editor-content ol,
+  .article-content ol {
+    list-style: decimal;
+  }
+
+  .rich-editor-content ul[data-type="taskList"],
+  .article-content ul[data-type="taskList"] {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .rich-editor-content li,
+  .article-content li {
+    margin-block: 0.45rem;
+  }
+
+  .rich-editor-content li[data-checked],
+  .article-content li[data-checked] {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .rich-editor-content code,
+  .article-content code {
+    border-radius: 0.45rem;
+    background: color-mix(in oklab, white 9%, transparent);
+    padding: 0.15rem 0.35rem;
+    color: color-mix(in oklab, var(--accent) 82%, white 18%);
+    font-size: 0.9em;
+  }
+
+  .rich-editor-content pre,
+  .article-content pre {
+    margin-block: 1.35rem;
+    overflow-x: auto;
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background: oklch(0.12 0.03 258);
+    padding: 1rem;
+  }
+
+  .rich-editor-content pre code,
+  .article-content pre code {
+    background: transparent;
+    padding: 0;
+    color: oklch(0.92 0.03 235);
+  }
+
+  .rich-editor-content table,
+  .article-content table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    margin-block: 1.35rem;
+  }
+
+  .rich-editor-content :where(th, td),
+  .article-content :where(th, td) {
+    min-width: 8rem;
+    border: 1px solid var(--border);
+    padding: 0.75rem;
+    vertical-align: top;
+  }
+
+  .rich-editor-content th,
+  .article-content th {
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    color: var(--foreground);
+    font-weight: 800;
+  }
+
+  .rich-editor-content img,
+  .article-content img {
+    height: auto;
+    max-width: 100%;
+    border-radius: 1rem;
+  }
+
+  .rich-editor-content figure,
+  .article-content figure {
+    margin-block: 1.35rem;
+  }
+
+  .rich-editor-content figcaption,
+  .article-content figcaption {
+    margin-top: 0.55rem;
+    color: var(--muted-foreground);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  .rich-editor-content .media-left,
+  .article-content .media-left {
+    margin-right: auto;
+    text-align: left;
+  }
+
+  .rich-editor-content .media-center,
+  .article-content .media-center {
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .rich-editor-content .media-right,
+  .article-content .media-right {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .rich-editor-content .video-embed,
+  .article-content .video-embed {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background: oklch(0.12 0.03 258);
+  }
+
+  .rich-editor-content .video-embed :where(iframe, video),
+  .article-content .video-embed :where(iframe, video) {
+    height: 100%;
+    width: 100%;
+  }
+
+  .rich-editor-content .content-box,
+  .article-content .content-box {
+    margin-block: 1.35rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    padding: 1rem 1.1rem;
+  }
+
+  .rich-editor-content .content-box-info,
+  .article-content .content-box-info {
+    border-color: color-mix(in oklab, var(--accent) 35%, transparent);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+  }
+
+  .rich-editor-content .content-box-warning,
+  .article-content .content-box-warning {
+    border-color: color-mix(in oklab, oklch(0.78 0.16 75) 35%, transparent);
+    background: color-mix(in oklab, oklch(0.78 0.16 75) 12%, transparent);
+  }
+
+  .rich-editor-content .content-box-success,
+  .article-content .content-box-success {
+    border-color: color-mix(in oklab, oklch(0.78 0.16 158) 35%, transparent);
+    background: color-mix(in oklab, oklch(0.78 0.16 158) 12%, transparent);
+  }
+
+  .rich-editor-content hr,
+  .article-content hr {
+    margin-block: 2rem;
+    border: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .rich-editor-content hr[data-break="read-more"]::after,
+  .rich-editor-content hr[data-break="page"]::after {
+    display: block;
+    width: fit-content;
+    margin: -0.75rem auto 0;
+    border-radius: 999px;
+    background: var(--background);
+    padding-inline: 0.75rem;
+    color: var(--muted-foreground);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .rich-editor-content hr[data-break="read-more"]::after {
+    content: "Read more";
+  }
+
+  .rich-editor-content hr[data-break="page"]::after {
+    content: "Page break";
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

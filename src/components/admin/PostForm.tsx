@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { listCategoriesPublic, adminCreatePost, adminUpdatePost } from "@/lib/blog.functions";
 import type { BlogPost } from "@/lib/blog.types";
 import { cn } from "@/lib/utils";
+import { RichTextEditor } from "./RichTextEditor";
 
 type FormState = {
   slug: string;
@@ -74,6 +75,21 @@ function getErrorMessage(error: unknown, fallback: string) {
 
 function getPostLang(value: string): FormState["lang"] {
   return value === "ne" || value === "both" ? value : "en";
+}
+
+async function uploadBlogImage(file: File) {
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `${crypto.randomUUID()}.${ext}`;
+  const { error: upErr } = await supabase.storage.from("blog-images").upload(path, file, {
+    cacheControl: "31536000",
+    upsert: false,
+  });
+  if (upErr) throw upErr;
+  const { data: signed, error: sErr } = await supabase.storage
+    .from("blog-images")
+    .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+  if (sErr) throw sErr;
+  return signed.signedUrl;
 }
 
 const empty: FormState = {
@@ -136,10 +152,25 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
   const [autoSlug, setAutoSlug] = useState(!existing);
   const [uploading, setUploading] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(form));
+  const [autoSavedAt, setAutoSavedAt] = useState<string | null>(null);
+  const [revisions, setRevisions] = useState<Array<{ at: string; form: FormState }>>([]);
 
   useEffect(() => {
     if (autoSlug && form.title_en) setForm((f) => ({ ...f, slug: slugify(f.title_en) }));
   }, [form.title_en, autoSlug]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const timeout = window.setTimeout(() => {
+      const at = new Date().toISOString();
+      const key = existing ? `cms-post-autosave:${existing.id}` : "cms-post-autosave:new";
+      const nextRevision = { at, form };
+      window.localStorage.setItem(key, JSON.stringify(nextRevision));
+      setAutoSavedAt(at);
+      setRevisions((current) => [nextRevision, ...current].slice(0, 8));
+    }, 2000);
+    return () => window.clearTimeout(timeout);
+  }, [existing, form]);
 
   const dirty = useMemo(() => JSON.stringify(form) !== savedSnapshot, [form, savedSnapshot]);
   const titlePreview = form.title_en || form.title_ne || "Untitled article";
@@ -181,6 +212,11 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
     },
     onSuccess: () => {
       setSavedSnapshot(JSON.stringify(form));
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(
+          existing ? `cms-post-autosave:${existing.id}` : "cms-post-autosave:new",
+        );
+      }
       toast.success(existing ? "Post updated" : "Post created");
       navigate({ to: "/admin" });
     },
@@ -196,18 +232,8 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
     }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("blog-images").upload(path, file, {
-        cacheControl: "31536000",
-        upsert: false,
-      });
-      if (upErr) throw upErr;
-      const { data: signed, error: sErr } = await supabase.storage
-        .from("blog-images")
-        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10); // 10 years
-      if (sErr) throw sErr;
-      setForm((f) => ({ ...f, cover_image_url: signed.signedUrl }));
+      const signedUrl = await uploadBlogImage(file);
+      setForm((f) => ({ ...f, cover_image_url: signedUrl }));
       toast.success("Image uploaded");
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, "Upload failed"));
@@ -245,6 +271,11 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
             </StatusPill>
             <StatusPill tone={uploading ? "warning" : "info"}>
               {uploading ? "Uploading image" : "Ready"}
+            </StatusPill>
+            <StatusPill tone="info">
+              {autoSavedAt
+                ? `Autosaved ${new Date(autoSavedAt).toLocaleTimeString()}`
+                : "Autosave on"}
             </StatusPill>
           </div>
         </div>
@@ -308,21 +339,25 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
           </Field>
 
           <Field label="Body (English)">
-            <textarea
+            <RichTextEditor
               value={form.body_en}
-              onChange={(e) => setForm({ ...form, body_en: e.target.value })}
-              rows={14}
-              className="input w-full font-mono text-sm"
-              placeholder="Markdown / plain text supported"
+              onChange={(body_en) => setForm({ ...form, body_en })}
+              label="English body editor"
+              placeholder="Write the English article body..."
+              uploadImage={uploadBlogImage}
+              internalLinks={parseList(form.internal_link_suggestions)}
             />
           </Field>
 
           <Field label="Body (Nepali)">
-            <textarea
+            <RichTextEditor
               value={form.body_ne}
-              onChange={(e) => setForm({ ...form, body_ne: e.target.value })}
-              rows={14}
-              className="input w-full font-nepali"
+              onChange={(body_ne) => setForm({ ...form, body_ne })}
+              label="Nepali body editor"
+              placeholder="नेपाली लेखको मुख्य सामग्री लेख्नुहोस्..."
+              nepali
+              uploadImage={uploadBlogImage}
+              internalLinks={parseList(form.internal_link_suggestions)}
             />
           </Field>
 
@@ -482,8 +517,40 @@ export function PostForm({ existing }: { existing?: BlogPost | null }) {
               )}
             >
               <Save className="h-4 w-4" />
-              {save.isPending ? "Saving…" : existing ? "Update post" : "Create post"}
+              {save.isPending
+                ? "Saving…"
+                : form.published
+                  ? existing
+                    ? "Publish update"
+                    : "Publish post"
+                  : "Save draft"}
             </button>
+          </div>
+
+          <div className="admin-card p-5">
+            <PanelTitle icon={Clock3} label="Revision history" />
+            {revisions.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Autosaved revisions will appear while you write.
+              </p>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {revisions.map((revision) => (
+                  <button
+                    key={revision.at}
+                    type="button"
+                    onClick={() => {
+                      setForm(revision.form);
+                      toast.success("Revision restored");
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl border border-white/8 bg-white/5 px-3 py-2 text-left text-xs text-slate-300 transition hover:border-cyan-400/30 hover:bg-cyan-400/10"
+                  >
+                    <span>{new Date(revision.at).toLocaleTimeString()}</span>
+                    <span className="text-cyan-200">Restore</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="admin-card p-5">
@@ -619,12 +686,12 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className={cn("block", className)}>
+    <div className={cn("block", className)}>
       <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
       {children}
-    </label>
+    </div>
   );
 }
 
@@ -658,7 +725,11 @@ function Meter({ count, ideal }: { count: number; ideal: string }) {
 }
 
 function countWords(text: string) {
-  return text.trim() ? text.trim().split(/\s+/).length : 0;
+  const plainText = text
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return plainText ? plainText.split(/\s+/).length : 0;
 }
 
 function StatusPill({

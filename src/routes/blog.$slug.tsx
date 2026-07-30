@@ -471,12 +471,13 @@ function PostPage() {
 
           <div
             className={cn(
-              "prose prose-lg mt-6 max-w-none whitespace-pre-wrap rounded-2xl border border-border bg-card/35 p-5 text-base leading-relaxed text-foreground shadow-[var(--shadow-card)] backdrop-blur md:p-7",
+              "article-content prose prose-lg mt-6 max-w-none rounded-2xl border border-border bg-card/35 p-5 text-base leading-relaxed text-foreground shadow-[var(--shadow-card)] backdrop-blur md:p-7",
               showNe && "font-nepali",
             )}
-          >
-            {showNe ? post.body_ne || post.body_en : post.body_en || post.body_ne}
-          </div>
+            dangerouslySetInnerHTML={{
+              __html: showNe ? post.body_ne || post.body_en : post.body_en || post.body_ne,
+            }}
+          />
 
           {post.tags.length > 0 && (
             <div className="mt-10 flex flex-wrap items-center gap-2 border-t border-border pt-6">
