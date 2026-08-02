@@ -64,7 +64,7 @@ export async function trackVisitor(pageUrl: string, postId?: string) {
   try {
     const location = await getLocation();
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("visitor_analytics")
       .insert({
         page_url: pageUrl,
@@ -78,10 +78,8 @@ export async function trackVisitor(pageUrl: string, postId?: string) {
         referrer: document.referrer || "direct",
         gender: getGender(),
         age_group: getAgeGroup(),
-      })
-      .select();
+      });
 
-    console.log("Analytics data:", data);
     console.log("Analytics error:", error);
 
   } catch (error) {
