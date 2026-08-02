@@ -54,26 +54,25 @@ async function getLocation() {
 
 export async function trackVisitor(pageUrl: string, postId?: string) {
   try {
+    const { data, error } = await supabase
+      .from("visitor_analytics")
+      .insert({
+        page_url: pageUrl,
+        post_id: postId ?? null,
+        device: getDevice(),
+        browser: getBrowser(),
+        os: getOS(),
+        language: navigator.language,
+        referrer: document.referrer || "direct",
+      })
+      .select();
 
-    const location = await getLocation();
+    if (error) {
+      console.error("Analytics insert error:", error);
+      return;
+    }
 
-    await supabase.from("visitor_analytics").insert({
-
-      page_url: pageUrl,
-      post_id: postId ?? null,
-
-      country: location.country,
-      city: location.city,
-
-      device: getDevice(),
-      browser: getBrowser(),
-      os: getOS(),
-
-      language: navigator.language,
-      referrer: document.referrer || "direct",
-
-    });
-
+    console.log("Visitor tracked:", data);
   } catch (error) {
     console.error("Analytics error:", error);
   }
