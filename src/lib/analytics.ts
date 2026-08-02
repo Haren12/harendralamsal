@@ -32,17 +32,48 @@ function getOS() {
   return "Other";
 }
 
+
+async function getLocation() {
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    const data = await res.json();
+
+    return {
+      country: data.country_name || null,
+      city: data.city || null,
+    };
+
+  } catch {
+    return {
+      country: null,
+      city: null,
+    };
+  }
+}
+
+
 export async function trackVisitor(pageUrl: string, postId?: string) {
   try {
+
+    const location = await getLocation();
+
     await supabase.from("visitor_analytics").insert({
+
       page_url: pageUrl,
       post_id: postId ?? null,
+
+      country: location.country,
+      city: location.city,
+
       device: getDevice(),
       browser: getBrowser(),
       os: getOS(),
+
       language: navigator.language,
       referrer: document.referrer || "direct",
+
     });
+
   } catch (error) {
     console.error("Analytics error:", error);
   }
