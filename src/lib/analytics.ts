@@ -38,12 +38,16 @@ async function getLocation() {
     const res = await fetch("https://ipapi.co/json/");
     const data = await res.json();
 
+    console.log("IP LOCATION:", data);
+
     return {
       country: data.country_name || null,
       city: data.city || null,
     };
 
-  } catch {
+  } catch (error) {
+    console.error("LOCATION ERROR:", error);
+
     return {
       country: null,
       city: null,
