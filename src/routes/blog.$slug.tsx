@@ -24,6 +24,7 @@ import { useI18n } from "@/lib/i18n";
 import { getPublishedPost, incrementPostView, listPublishedPosts } from "@/lib/blog.functions";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date";
+import { trackVisitor } from "@/lib/analytics";
 
 const SITE_ORIGIN = "https://harendralamsal.com";
 
@@ -301,7 +302,14 @@ function PostPage() {
         sessionStorage.removeItem(key);
       });
   }, [countView, postQ, slug]);
+  useEffect(() => {
+  if (!post) return;
 
+  trackVisitor(
+    window.location.pathname,
+    post.id
+  );
+}, [post]);
   if (postQ.isError) {
     return (
       <div className="container-page py-32 text-center">
