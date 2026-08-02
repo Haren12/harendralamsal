@@ -35,19 +35,15 @@ function getOS() {
 
 async function getLocation() {
   try {
-    const res = await fetch("https://ipapi.co/json/");
+    const res = await fetch("https://ipwho.is/");
     const data = await res.json();
 
-    console.log("IP LOCATION:", data);
-
     return {
-      country: data.country_name || null,
+      country: data.country || null,
       city: data.city || null,
     };
 
-  } catch (error) {
-    console.error("LOCATION ERROR:", error);
-
+  } catch {
     return {
       country: null,
       city: null,
