@@ -1,3 +1,4 @@
+import BlogReferences from "@/components/site/BlogReferences";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -477,6 +478,10 @@ function PostPage() {
             dangerouslySetInnerHTML={{
               __html: showNe ? post.body_ne || post.body_en : post.body_en || post.body_ne,
             }}
+          />
+          <BlogReferences
+             internalLinks={post.internal_link_suggestions}
+             externalLinks={post.external_references}
           />
 
           {post.tags.length > 0 && (
