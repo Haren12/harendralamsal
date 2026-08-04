@@ -303,13 +303,10 @@ function PostPage() {
       });
   }, [countView, postQ, slug]);
   useEffect(() => {
-  if (!post) return;
+    if (!post) return;
 
-  trackVisitor(
-    window.location.pathname,
-    post.id
-  );
-}, [post]);
+    trackVisitor(window.location.pathname, post.id);
+  }, [post]);
   if (postQ.isError) {
     return (
       <div className="container-page py-32 text-center">
@@ -488,8 +485,8 @@ function PostPage() {
             }}
           />
           <BlogReferences
-             internalLinks={post.internal_link_suggestions}
-             externalLinks={post.external_references}
+            internalLinks={post.internal_link_suggestions}
+            externalLinks={post.external_references}
           />
 
           {post.tags.length > 0 && (

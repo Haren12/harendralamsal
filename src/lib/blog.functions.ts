@@ -179,9 +179,7 @@ export const listCategoriesPublic = createServerFn({ method: "GET" }).handler(as
 });
 
 export const getCategoryBySlug = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) =>
-    z.object({ slug: z.string().min(1) }).parse(d)
-  )
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
     const supabase = publicClient();
 
@@ -196,25 +194,22 @@ export const getCategoryBySlug = createServerFn({ method: "GET" })
     return category;
   });
 
-
 export const listPostsByCategory = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) =>
-    z.object({ slug: z.string().min(1) }).parse(d)
-  )
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
     const supabase = await publicReadClient();
 
     const { data: posts, error } = await supabase
-  .from("blog_posts")
-  .select(
-    `
+      .from("blog_posts")
+      .select(
+        `
       ${POST_SELECT},
       blog_categories!inner(slug)
-    `
-  )
-  .eq("published", true)
-  .eq("blog_categories.slug", data.slug)
-  .order("published_at", { ascending: false });
+    `,
+      )
+      .eq("published", true)
+      .eq("blog_categories.slug", data.slug)
+      .order("published_at", { ascending: false });
 
     if (error) throw new Error(error.message);
 
@@ -260,14 +255,57 @@ export const checkIsAdmin = createServerFn({ method: "GET" })
 
 export const adminListPosts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(["all", "published", "draft"]).default("all"),
+        category_id: z.string().uuid().optional(),
+        sort_by: z.enum(["updated_at", "published_at"]).default("updated_at"),
+        sort_order: z.enum(["asc", "desc"]).default("desc"),
+        page: z.number().int().min(1).default(1),
+        page_size: z.number().int().min(1).max(50).default(12),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId, context.claims);
-    const { data, error } = await context.supabase
-      .from("blog_posts")
-      .select(POST_SELECT)
-      .order("updated_at", { ascending: false });
+
+    const query = context.supabase.from("blog_posts").select(POST_SELECT, { count: "exact" });
+
+    if (data.search) {
+      const safeSearch = data.search.replace(/[%_]/g, "\\$&");
+      const pattern = `%${safeSearch}%`;
+      query.or(
+        `title_en.ilike.${pattern},title_ne.ilike.${pattern},slug.ilike.${pattern},excerpt_en.ilike.${pattern},excerpt_ne.ilike.${pattern}`,
+      );
+    }
+
+    if (data.status === "published") {
+      query.eq("published", true);
+    }
+
+    if (data.status === "draft") {
+      query.eq("published", false);
+    }
+
+    if (data.category_id) {
+      query.eq("category_id", data.category_id);
+    }
+
+    const ascending = data.sort_order === "asc";
+    query.order(data.sort_by, { ascending });
+
+    const from = (data.page - 1) * data.page_size;
+    const to = from + data.page_size - 1;
+    const { data: posts, count, error } = await query.range(from, to);
+
     if (error) throw new Error(error.message);
-    return (data ?? []) as unknown as BlogPost[];
+
+    return {
+      posts: (posts ?? []) as unknown as BlogPost[],
+      count: count ?? 0,
+    };
   });
 
 export const adminGetPost = createServerFn({ method: "GET" })
@@ -357,6 +395,43 @@ export const adminDeletePost = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId, context.claims);
     const { error } = await context.supabase.from("blog_posts").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminDeletePosts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ids: z.array(z.string().uuid()).min(1),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId, context.claims);
+    const { error } = await context.supabase.from("blog_posts").delete().in("id", data.ids);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminUpdatePosts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ids: z.array(z.string().uuid()).min(1),
+        published: z.boolean(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId, context.claims);
+    const payload = {
+      published: data.published,
+      published_at: data.published ? new Date().toISOString() : null,
+    };
+    const { error } = await context.supabase.from("blog_posts").update(payload).in("id", data.ids);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

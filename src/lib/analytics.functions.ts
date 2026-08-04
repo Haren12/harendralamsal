@@ -1,9 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export async function getVisitorAnalytics() {
-  const { data, error } = await supabase
-    .from("visitor_analytics")
-    .select("*");
+  const { data, error } = await supabase.from("visitor_analytics").select("*");
 
   if (error) {
     console.error("Analytics fetch error:", error);

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -19,8 +20,27 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { adminDeletePost, adminListPosts } from "@/lib/blog.functions";
+import {
+  adminDeletePost,
+  adminDeletePosts,
+  adminListPosts,
+  adminUpdatePosts,
+  listCategoriesPublic,
+} from "@/lib/blog.functions";
+import type { BlogCategory, BlogPost } from "@/lib/blog.types";
 import { formatDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
@@ -48,15 +68,47 @@ function AdminPage() {
 
   const listPosts = useServerFn(adminListPosts);
   const deletePost = useServerFn(adminDeletePost);
+  const deletePosts = useServerFn(adminDeletePosts);
+  const updatePosts = useServerFn(adminUpdatePosts);
+  const listCategories = useServerFn(listCategoriesPublic);
 
+  const [search, setSearch] = React.useState("");
+  const [status, setStatus] = React.useState<"all" | "published" | "draft">("all");
+  const [categoryId, setCategoryId] = React.useState<string | null>(null);
+  const [sortBy, setSortBy] = React.useState<"updated_at" | "published_at">("updated_at");
+  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("desc");
+  const [page, setPage] = React.useState(1);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
 
-  const postsQuery = useQuery({
-    queryKey: ["adminPosts"],
-    queryFn: () => listPosts(),
+  function resetSelection() {
+    setSelectedIds([]);
+  }
+
+  const categoriesQuery = useQuery<BlogCategory[]>({
+    queryKey: ["adminCategories"],
+    queryFn: () => listCategories(),
   });
 
+  const postsQuery = useQuery<{ posts: BlogPost[]; count: number }, Error>({
+    queryKey: ["adminPosts", search, status, categoryId, sortBy, sortOrder, page],
+    queryFn: () =>
+      listPosts({
+        data: {
+          search,
+          status,
+          category_id: categoryId ?? undefined,
+          sort_by: sortBy,
+          sort_order: sortOrder,
+          page,
+          page_size: 12,
+        },
+      }),
+  });
 
-  const posts = postsQuery.data ?? [];
+  const pageSize = 12;
+  const posts = postsQuery.data?.posts ?? [];
+  const totalCount = postsQuery.data?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
 
   const deleteMutation = useMutation({
@@ -79,7 +131,58 @@ function AdminPage() {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Delete failed"
+          : "Delete failed",
+      );
+    },
+  });
+
+  const bulkPublishMutation = useMutation({
+    mutationFn: (ids: string[]) =>
+      updatePosts({ data: { ids, published: true } }),
+    onSuccess() {
+      toast.success("Posts published successfully");
+      queryClient.invalidateQueries({ queryKey: ["adminPosts"] });
+      setSelectedIds([]);
+    },
+    onError(error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Bulk publish failed",
+      );
+    },
+  });
+
+  const bulkUnpublishMutation = useMutation({
+    mutationFn: (ids: string[]) =>
+      updatePosts({ data: { ids, published: false } }),
+    onSuccess() {
+      toast.success("Posts unpublished successfully");
+      queryClient.invalidateQueries({ queryKey: ["adminPosts"] });
+      setSelectedIds([]);
+    },
+    onError(error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Bulk unpublish failed",
+      );
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids: string[]) =>
+      deletePosts({ data: { ids } }),
+    onSuccess() {
+      toast.success("Posts deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["adminPosts"] });
+      setSelectedIds([]);
+    },
+    onError(error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Bulk delete failed",
       );
     },
   });
@@ -99,7 +202,19 @@ function AdminPage() {
     });
   }
 
+  function toggleSelectAll(checked: boolean) {
+    if (checked) {
+      setSelectedIds(posts.map((post) => post.id));
+      return;
+    }
+    setSelectedIds([]);
+  }
 
+  function toggleSelect(id: string, checked: boolean) {
+    setSelectedIds((current) =>
+      checked ? [...new Set([...current, id])] : current.filter((item) => item !== id),
+    );
+  }
 
   const total = posts.length;
 
@@ -109,6 +224,9 @@ function AdminPage() {
 
   const drafts = total - published;
 
+  const selectedCount = selectedIds.length;
+  const allSelected = selectedCount === posts.length && posts.length > 0;
+  const anySelected = selectedCount > 0;
 
   const latest = [...posts]
     .sort(
@@ -294,25 +412,89 @@ function AdminPage() {
             <div className="overflow-hidden rounded-[2rem] border border-cyan-400/15 bg-slate-950/80">
 
 
-              <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+              <div className="space-y-4 border-b border-white/10 px-6 py-4">
 
-                <div>
+            <div className="flex items-center justify-between gap-4">
 
-                  <p className="text-xs uppercase tracking-wider text-cyan-200">
-                    Content Stream
-                  </p>
+              <div>
 
+                <p className="text-xs uppercase tracking-wider text-cyan-200">
+                  Content Stream
+                </p>
 
-                  <p className="text-sm text-slate-400">
-                    Recent posts
-                  </p>
-
-                </div>
-
-
-                <CalendarClock className="h-5 w-5 text-cyan-300"/>
+                <p className="text-sm text-slate-400">
+                  Recent posts
+                </p>
 
               </div>
+
+              <CalendarClock className="h-5 w-5 text-cyan-300"/>
+
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)] xl:grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)_minmax(220px,1fr)]">
+
+              <Input
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setPage(1);
+                  resetSelection();
+                }}
+                placeholder="Search posts..."
+                className="bg-slate-950/80 text-slate-100 placeholder:text-slate-500"
+              />
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Select value={status} onValueChange={(value) => { setStatus(value as "all" | "published" | "draft"); setPage(1); resetSelection(); }}>
+                  <SelectTrigger className="w-full bg-slate-950/80 text-slate-100">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortBy} onValueChange={(value) => { setSortBy(value as "updated_at" | "published_at"); setPage(1); }}>
+                  <SelectTrigger className="w-full bg-slate-950/80 text-slate-100">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="updated_at">Updated date</SelectItem>
+                    <SelectItem value="published_at">Publish date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Select value={sortOrder} onValueChange={(value) => { setSortOrder(value as "asc" | "desc"); setPage(1); resetSelection(); }}>
+                  <SelectTrigger className="w-full bg-slate-950/80 text-slate-100">
+                    <SelectValue placeholder="Order" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="desc">Newest first</SelectItem>
+                    <SelectItem value="asc">Oldest first</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={categoryId ?? ""} onValueChange={(value) => { setCategoryId(value || null); setPage(1); resetSelection(); }}>
+                  <SelectTrigger className="w-full bg-slate-950/80 text-slate-100">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All categories</SelectItem>
+                    {categoriesQuery.data?.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name_en}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
 
 
 
@@ -349,7 +531,55 @@ function AdminPage() {
 
               {posts.length > 0 && (
 
-                <div className="overflow-x-auto">
+                <>
+
+                  <div className="flex flex-col gap-3 border-b border-white/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-white">
+                        {selectedCount > 0 ? `${selectedCount} selected` : "Bulk actions"}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        Manage multiple posts at once.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!anySelected || bulkPublishMutation.isLoading || bulkUnpublishMutation.isLoading || bulkDeleteMutation.isLoading}
+                        onClick={() => bulkPublishMutation.mutate(selectedIds)}
+                      >
+                        Publish
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!anySelected || bulkPublishMutation.isLoading || bulkUnpublishMutation.isLoading || bulkDeleteMutation.isLoading}
+                        onClick={() => bulkUnpublishMutation.mutate(selectedIds)}
+                      >
+                        Unpublish
+                      </Button>
+
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={!anySelected || bulkPublishMutation.isLoading || bulkUnpublishMutation.isLoading || bulkDeleteMutation.isLoading}
+                        onClick={() => {
+                          if (window.confirm(`Delete ${selectedCount} selected post${selectedCount === 1 ? "" : "s"}?`)) {
+                            bulkDeleteMutation.mutate(selectedIds);
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+
+                  </div>
+
+                  <div className="overflow-x-auto">
 
 
                   <table className="w-full min-w-[800px] text-sm">
@@ -358,6 +588,13 @@ function AdminPage() {
                     <thead className="bg-white/5 text-xs uppercase text-slate-400">
 
                       <tr>
+
+                        <th className="px-6 py-4 text-left">
+                          <Checkbox
+                            checked={allSelected}
+                            onCheckedChange={(checked) => toggleSelectAll(checked === true)}
+                          />
+                        </th>
 
                         <th className="px-6 py-4 text-left">
                           Title
@@ -402,6 +639,12 @@ function AdminPage() {
                       >
 
 
+                        <td className="px-6 py-4">
+                          <Checkbox
+                            checked={selectedIds.includes(post.id)}
+                            onCheckedChange={(checked) => toggleSelect(post.id, checked === true)}
+                          />
+                        </td>
                         <td className="px-6 py-4">
 
 
@@ -574,6 +817,60 @@ function AdminPage() {
 
 
                 </div>
+
+                <div className="border-t border-white/10 bg-slate-950/80 px-6 py-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-slate-400">
+                      Showing {posts.length} of {totalCount.toLocaleString()} posts
+                    </p>
+
+                    <Pagination className="justify-end">
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            href="#"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              resetSelection();
+                              setPage((current) => Math.max(1, current - 1));
+                            }}
+                            disabled={page <= 1}
+                          />
+                        </PaginationItem>
+
+                        {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                          <PaginationItem key={pageNumber}>
+                            <PaginationLink
+                              href="#"
+                              isActive={pageNumber === page}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                resetSelection();
+                                setPage(pageNumber);
+                              }}
+                            >
+                              {pageNumber}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            href="#"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              resetSelection();
+                              setPage((current) => Math.min(totalPages, current + 1));
+                            }}
+                            disabled={page >= totalPages}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                </div>
+
+                </>
 
               )}
 

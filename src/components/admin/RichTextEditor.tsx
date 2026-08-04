@@ -412,62 +412,57 @@ export function RichTextEditor({
         className,
       )}
     >
-     <div className="sticky top-0 z-40 border-b border-border bg-slate-950/95 backdrop-blur-md">
+      <div className="sticky top-0 z-40 border-b border-border bg-slate-950/95 backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-200/80">{label}</p>
 
-  <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-    <div>
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-200/80">
-        {label}
-      </p>
+            <p className="mt-1 text-xs text-slate-400">
+              {stats.words} words · {stats.characters} characters · clean HTML
+            </p>
+          </div>
 
-      <p className="mt-1 text-xs text-slate-400">
-        {stats.words} words · {stats.characters} characters · clean HTML
-      </p>
-    </div>
+          <div className="flex flex-wrap gap-1">
+            <PreviewButton
+              active={preview === "desktop"}
+              icon={Monitor}
+              label="Desktop preview"
+              onClick={() => setPreview("desktop")}
+            />
 
-    <div className="flex flex-wrap gap-1">
-      <PreviewButton
-        active={preview === "desktop"}
-        icon={Monitor}
-        label="Desktop preview"
-        onClick={() => setPreview("desktop")}
-      />
+            <PreviewButton
+              active={preview === "tablet"}
+              icon={Tablet}
+              label="Tablet preview"
+              onClick={() => setPreview("tablet")}
+            />
 
-      <PreviewButton
-        active={preview === "tablet"}
-        icon={Tablet}
-        label="Tablet preview"
-        onClick={() => setPreview("tablet")}
-      />
+            <PreviewButton
+              active={preview === "mobile"}
+              icon={Smartphone}
+              label="Mobile preview"
+              onClick={() => setPreview("mobile")}
+            />
 
-      <PreviewButton
-        active={preview === "mobile"}
-        icon={Smartphone}
-        label="Mobile preview"
-        onClick={() => setPreview("mobile")}
-      />
+            <button
+              type="button"
+              className="rich-control px-3"
+              onClick={() => setSourceMode((open) => !open)}
+            >
+              HTML
+            </button>
+          </div>
+        </div>
 
-      <button
-        type="button"
-        className="rich-control px-3"
-        onClick={() => setSourceMode((open) => !open)}
-      >
-        HTML
-      </button>
-    </div>
-  </div>
-
-
-  <RichTextToolbar
-    editor={editor}
-    onInsertImage={() => fileRef.current?.click()}
-    onInsertGallery={insertGallery}
-    onInsertVideo={insertVideo}
-    onFindReplace={findReplace}
-    onPlainPaste={pastePlainText}
-  />
-
-</div>
+        <RichTextToolbar
+          editor={editor}
+          onInsertImage={() => fileRef.current?.click()}
+          onInsertGallery={insertGallery}
+          onInsertVideo={insertVideo}
+          onFindReplace={findReplace}
+          onPlainPaste={pastePlainText}
+        />
+      </div>
 
       <input
         ref={fileRef}

@@ -27,9 +27,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           console.error("Sitemap error:", error);
         }
 
-        const postPaths = (blogPosts ?? []).map(
-          (post) => `/blog/${post.slug}`
-        );
+        const postPaths = (blogPosts ?? []).map((post) => `/blog/${post.slug}`);
 
         const all = [...staticPaths, ...postPaths];
 
@@ -38,7 +36,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
           ...all.map(
             (path) =>
-              `  <url><loc>${BASE_URL}${path}</loc><changefreq>weekly</changefreq><priority>${path === "/" ? "1.0" : "0.7"}</priority></url>`
+              `  <url><loc>${BASE_URL}${path}</loc><changefreq>weekly</changefreq><priority>${path === "/" ? "1.0" : "0.7"}</priority></url>`,
           ),
           `</urlset>`,
         ].join("\n");

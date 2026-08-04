@@ -8,35 +8,24 @@ type Props = {
 function getTitleFromSlug(url: string) {
   const slug = url.split("/").pop() ?? url;
 
-  return slug
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export default function BlogReferences({
-  internalLinks = [],
-  externalLinks = [],
-}: Props) {
+export default function BlogReferences({ internalLinks = [], externalLinks = [] }: Props) {
   if (!internalLinks.length && !externalLinks.length) {
     return null;
   }
 
   return (
     <section className="mt-12 space-y-8 border-t pt-8">
-
       {internalLinks.length > 0 && (
         <div>
-          <h2 className="mb-4 text-xl font-bold">
-            Related Articles
-          </h2>
+          <h2 className="mb-4 text-xl font-bold">Related Articles</h2>
 
           <ul className="space-y-2">
             {internalLinks.map((link) => (
               <li key={link}>
-                <Link
-                  to={link as any}
-                  className="text-blue-600 hover:underline"
-                >
+                <Link to={link as any} className="text-blue-600 hover:underline">
                   {getTitleFromSlug(link)}
                 </Link>
               </li>
@@ -47,9 +36,7 @@ export default function BlogReferences({
 
       {externalLinks.length > 0 && (
         <div>
-          <h2 className="mb-4 text-xl font-bold">
-            External References
-          </h2>
+          <h2 className="mb-4 text-xl font-bold">External References</h2>
 
           <ul className="space-y-2">
             {externalLinks.map((link) => (
@@ -67,7 +54,6 @@ export default function BlogReferences({
           </ul>
         </div>
       )}
-
     </section>
   );
 }

@@ -122,7 +122,9 @@ function ContactPage() {
         );
       }
     } catch (err) {
-      toast.error(ne ? "पठाउन सकेन। तलका विकल्प प्रयोग गर्नुहोस्।" : "Could not send. Use the options below.");
+      toast.error(
+        ne ? "पठाउन सकेन। तलका विकल्प प्रयोग गर्नुहोस्।" : "Could not send. Use the options below.",
+      );
     } finally {
       setBusy(false);
 
@@ -273,7 +275,13 @@ function ContactPage() {
               className="tech-button inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-60"
             >
               <span className={ne ? "font-nepali" : ""}>
-                {busy ? (ne ? "पठाउँदैछ…" : "Sending…") : ne ? "WhatsApp बाट पठाउनुहोस्" : "Send via WhatsApp"}
+                {busy
+                  ? ne
+                    ? "पठाउँदैछ…"
+                    : "Sending…"
+                  : ne
+                    ? "WhatsApp बाट पठाउनुहोस्"
+                    : "Send via WhatsApp"}
               </span>
               <Send className="h-4 w-4" />
             </button>

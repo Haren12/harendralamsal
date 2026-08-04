@@ -32,7 +32,6 @@ function getOS() {
   return "Other";
 }
 
-
 async function getLocation() {
   try {
     const res = await fetch("https://ipwho.is/");
@@ -42,7 +41,6 @@ async function getLocation() {
       country: data.country || null,
       city: data.city || null,
     };
-
   } catch {
     return {
       country: null,
@@ -50,7 +48,6 @@ async function getLocation() {
     };
   }
 }
-
 
 function getGender() {
   return "unknown";
@@ -64,24 +61,21 @@ export async function trackVisitor(pageUrl: string, postId?: string) {
   try {
     const location = await getLocation();
 
-    const { error } = await supabase
-      .from("visitor_analytics")
-      .insert({
-        page_url: pageUrl,
-        post_id: postId ?? null,
-        country: location.country,
-        city: location.city,
-        device: getDevice(),
-        browser: getBrowser(),
-        os: getOS(),
-        language: navigator.language,
-        referrer: document.referrer || "direct",
-        gender: getGender(),
-        age_group: getAgeGroup(),
-      });
+    const { error } = await supabase.from("visitor_analytics").insert({
+      page_url: pageUrl,
+      post_id: postId ?? null,
+      country: location.country,
+      city: location.city,
+      device: getDevice(),
+      browser: getBrowser(),
+      os: getOS(),
+      language: navigator.language,
+      referrer: document.referrer || "direct",
+      gender: getGender(),
+      age_group: getAgeGroup(),
+    });
 
     console.log("Analytics error:", error);
-
   } catch (error) {
     console.error("Analytics catch error:", error);
   }

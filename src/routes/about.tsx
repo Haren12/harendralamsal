@@ -7,25 +7,25 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Harendra Lamsal | Frontend Web Developer Nepal"  },
-     {
+      { title: "About Harendra Lamsal | Frontend Web Developer Nepal" },
+      {
         name: "description",
         content:
-            "Harendra Lamsal is a Frontend Web Developer from Nepal specializing in React, TypeScript, WordPress, SEO, and modern website development.",
-       },
+          "Harendra Lamsal is a Frontend Web Developer from Nepal specializing in React, TypeScript, WordPress, SEO, and modern website development.",
+      },
       { property: "og:title", content: "About Harendra Lamsal" },
       {
         property: "og:description",
         content:
-           "Harendra Lamsal is a Frontend Web Developer from Nepal specializing in React, TypeScript, WordPress, SEO, and modern website development.",
+          "Harendra Lamsal is a Frontend Web Developer from Nepal specializing in React, TypeScript, WordPress, SEO, and modern website development.",
       },
       { property: "og:url", content: "/about" },
     ],
     links: [
-      {  
+      {
         rel: "canonical",
-        href: "https://www.harendralamsal.name.np/about", 
-      }
+        href: "https://www.harendralamsal.name.np/about",
+      },
     ],
   }),
   component: AboutPage,
@@ -48,9 +48,9 @@ function AboutPage() {
               ne && "font-nepali",
             )}
           >
-           {ne
-             ? "नेपालका एक फ्रन्टएन्ड वेब डेभलपर, जसले आधुनिक, छिटो र SEO-friendly वेबसाइटहरू निर्माण गर्छन्।"
-             : "A Frontend Web Developer from Nepal building modern, fast, and SEO-friendly websites."}
+            {ne
+              ? "नेपालका एक फ्रन्टएन्ड वेब डेभलपर, जसले आधुनिक, छिटो र SEO-friendly वेबसाइटहरू निर्माण गर्छन्।"
+              : "A Frontend Web Developer from Nepal building modern, fast, and SEO-friendly websites."}
           </h1>
           <p
             className={cn(
@@ -58,9 +58,9 @@ function AboutPage() {
               ne && "font-nepali",
             )}
           >
-           {ne
-             ? "म हरेन्द्र लम्साल हुँ — नेपालका एक फ्रन्टएन्ड वेब डेभलपर, ब्लगर र डिजिटल क्रिएटर। म React, TypeScript, WordPress र SEO-friendly वेबसाइट निर्माणमा विशेषज्ञता राख्छु। मैले नेपाल तथा विश्वभरका व्यवसायहरूका लागि आधुनिक, छिटो र प्रयोगमैत्री वेबसाइटहरू निर्माण गर्न सहयोग गर्दै आएको छु।"
-             : "I'm Harendra Lamsal — a Frontend Web Developer, blogger, and digital creator from Nepal. I specialize in React, TypeScript, WordPress, and SEO-friendly website development. I help businesses in Nepal and worldwide build modern, fast, and user-friendly websites."}
+            {ne
+              ? "म हरेन्द्र लम्साल हुँ — नेपालका एक फ्रन्टएन्ड वेब डेभलपर, ब्लगर र डिजिटल क्रिएटर। म React, TypeScript, WordPress र SEO-friendly वेबसाइट निर्माणमा विशेषज्ञता राख्छु। मैले नेपाल तथा विश्वभरका व्यवसायहरूका लागि आधुनिक, छिटो र प्रयोगमैत्री वेबसाइटहरू निर्माण गर्न सहयोग गर्दै आएको छु।"
+              : "I'm Harendra Lamsal — a Frontend Web Developer, blogger, and digital creator from Nepal. I specialize in React, TypeScript, WordPress, and SEO-friendly website development. I help businesses in Nepal and worldwide build modern, fast, and user-friendly websites."}
           </p>
         </div>
       </section>
