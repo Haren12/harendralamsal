@@ -44,6 +44,7 @@ declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     fontSize: {
       setFontSize: (size: string) => ReturnType;
+      unsetFontSize: () => ReturnType;
     };
     boxBlocks: {
       insertInfoBox: () => ReturnType;
@@ -226,30 +227,10 @@ const EditorUtilities = Extension.create({
           editor.commands.setContent(cleanHtml(editor.getHTML()));
           return true;
         },
-      openLinkDialog:
-        () =>
-        ({ editor }) => {
-          const previous = editor.getAttributes("link").href as string | undefined;
-          const href = window.prompt("Link URL", previous ?? "https://");
-          if (href === null) return true;
-          if (!href.trim()) return editor.chain().focus().unsetLink().run();
-          const openNew = window.confirm("Open in new tab?");
-          const nofollow = window.confirm("Add nofollow?");
-          return editor
-            .chain()
-            .focus()
-            .extendMarkRange("link")
-            .setLink({
-              href,
-              target: openNew ? "_blank" : null,
-              rel: nofollow
-                ? "nofollow noopener noreferrer"
-                : openNew
-                  ? "noopener noreferrer"
-                  : null,
-            })
-            .run();
-        },
+      openLinkDialog: () => () => {
+        window.dispatchEvent(new CustomEvent("rich-text-open-link-dialog"));
+        return true;
+      },
     };
   },
 });
@@ -279,7 +260,15 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const [preview, setPreview] = useState<PreviewMode>("desktop");
   const [sourceMode, setSourceMode] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageAlt, setImageAlt] = useState("");
+  const [imageUploadProgress, setImageUploadProgress] = useState("");
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkText, setLinkText] = useState("");
+  const [linkNewTab, setLinkNewTab] = useState(true);
+  const imageFileRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -345,6 +334,20 @@ export function RichTextEditor({
     editor.commands.setContent(value || "", false);
   }, [editor, value]);
 
+  useEffect(() => {
+    const openLinkDialog = () => {
+      const previous = editor?.getAttributes("link").href as string | undefined;
+      const selectionText = editor?.state.selection.textContent ?? "";
+      setLinkUrl(previous ?? "");
+      setLinkText(selectionText || "");
+      setLinkNewTab(previous ? editor?.getAttributes("link").target === "_blank" : true);
+      setLinkDialogOpen(true);
+    };
+
+    window.addEventListener("rich-text-open-link-dialog", openLinkDialog);
+    return () => window.removeEventListener("rich-text-open-link-dialog", openLinkDialog);
+  }, [editor]);
+
   const stats = useMemo(() => getContentStats(value), [value]);
   const seo = useMemo(() => getSeoChecks(value), [value]);
   const previewClass =
@@ -353,8 +356,8 @@ export function RichTextEditor({
   async function insertFiles(files: File[]) {
     if (!editor) return;
     for (const file of files) {
-      if (!file.type.startsWith("image/")) {
-        toast.error(`${file.name} is not an image`);
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        toast.error(`${file.name} is not a supported image type`);
         continue;
       }
       if (file.size > 5 * 1024 * 1024) {
@@ -363,20 +366,85 @@ export function RichTextEditor({
       }
       try {
         const src = await uploadImage(file);
-        const alt = window.prompt("Image alt text", file.name.replace(/\.[^.]+$/, "")) ?? "";
-        const caption = window.prompt("Caption (optional)", "") ?? "";
-        const align = window.prompt("Alignment: left, center, right", "center") ?? "center";
         editor
           .chain()
           .focus()
           .insertContent(
-            `<figure class="media media-${align}"><img src="${src}" alt="${escapeHtml(alt)}" loading="lazy" /><figcaption>${escapeHtml(caption)}</figcaption></figure><p></p>`,
+            `<figure class="media media-center"><img src="${src}" alt="${escapeHtml(file.name.replace(/\.[^.]+$/, ""))}" loading="lazy" /></figure><p></p>`,
           )
           .run();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Image upload failed");
       }
     }
+  }
+
+  async function handleImageUpload(file: File) {
+    if (!editor) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Only JPEG, PNG, and WebP images are supported");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5 MB");
+      return;
+    }
+
+    setImageUploadProgress("Uploading...");
+    try {
+      const src = await uploadImage(file);
+      setImageUrl(src);
+      setImageAlt(file.name.replace(/\.[^.]+$/, ""));
+      setImageUploadProgress("Ready to insert");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Image upload failed");
+      setImageUploadProgress("");
+    }
+  }
+
+  function insertImageFromDialog() {
+    if (!editor || !imageUrl) {
+      toast.error("Please add an image URL or upload one first");
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .insertContent(
+        `<figure class="media media-center"><img src="${imageUrl}" alt="${escapeHtml(imageAlt)}" loading="lazy" /></figure><p></p>`,
+      )
+      .run();
+    setImageDialogOpen(false);
+    setImageUrl("");
+    setImageAlt("");
+    setImageUploadProgress("");
+  }
+
+  function insertLinkFromDialog() {
+    if (!editor) return;
+    const trimmedUrl = linkUrl.trim();
+    if (!trimmedUrl) {
+      toast.error("Please enter a URL");
+      return;
+    }
+
+    const href =
+      trimmedUrl.startsWith("http://") || trimmedUrl.startsWith("https://")
+        ? trimmedUrl
+        : `https://${trimmedUrl}`;
+    const displayText = linkText.trim() || href;
+    const attributes = linkNewTab ? ' target="_blank" rel="noopener noreferrer"' : "";
+
+    editor
+      .chain()
+      .focus()
+      .insertContent(`<a href="${escapeHtml(href)}"${attributes}>${escapeHtml(displayText)}</a>`)
+      .run();
+    setLinkDialogOpen(false);
+    setLinkUrl("");
+    setLinkText("");
+    setLinkNewTab(true);
   }
 
   function insertVideo() {
@@ -388,7 +456,7 @@ export function RichTextEditor({
   }
 
   function insertGallery() {
-    fileRef.current?.click();
+    imageFileRef.current?.click();
   }
 
   function findReplace() {
@@ -456,7 +524,7 @@ export function RichTextEditor({
 
         <RichTextToolbar
           editor={editor}
-          onInsertImage={() => fileRef.current?.click()}
+          onInsertImage={() => setImageDialogOpen(true)}
           onInsertGallery={insertGallery}
           onInsertVideo={insertVideo}
           onFindReplace={findReplace}
@@ -465,9 +533,9 @@ export function RichTextEditor({
       </div>
 
       <input
-        ref={fileRef}
+        ref={imageFileRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         multiple
         className="hidden"
         onChange={(event) => {
@@ -476,6 +544,183 @@ export function RichTextEditor({
           event.target.value = "";
         }}
       />
+
+      {imageDialogOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Insert image</p>
+                <p className="text-sm text-muted-foreground">
+                  Upload a file or paste an image URL to add it to the editor.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+                onClick={() => setImageDialogOpen(false)}
+              >
+                <span className="text-lg">×</span>
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                  onClick={() => imageFileRef.current?.click()}
+                >
+                  Upload Image
+                </button>
+                <span className="text-sm text-muted-foreground">
+                  {imageUploadProgress || "JPEG, PNG, or WebP • max 5MB"}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="image-url">
+                  Image URL
+                </label>
+                <input
+                  id="image-url"
+                  value={imageUrl}
+                  onChange={(event) => setImageUrl(event.target.value)}
+                  className="input w-full"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="image-alt">
+                  Alt text
+                </label>
+                <input
+                  id="image-alt"
+                  value={imageAlt}
+                  onChange={(event) => setImageAlt(event.target.value)}
+                  className="input w-full"
+                  placeholder="Descriptive alt text"
+                />
+              </div>
+
+              {imageUrl ? (
+                <div className="rounded-xl border border-border bg-background/70 p-3">
+                  <p className="mb-2 text-sm font-medium text-foreground">Preview</p>
+                  <img
+                    src={imageUrl}
+                    alt={imageAlt || "Preview"}
+                    className="max-h-48 w-full rounded-lg object-contain"
+                  />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                className="rounded-lg border border-border px-3 py-2 text-sm text-foreground"
+                onClick={() => {
+                  setImageDialogOpen(false);
+                  setImageUrl("");
+                  setImageAlt("");
+                  setImageUploadProgress("");
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded-lg bg-cyan-500 px-3 py-2 text-sm font-semibold text-white"
+                onClick={insertImageFromDialog}
+              >
+                Insert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {linkDialogOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Insert link</p>
+                <p className="text-sm text-muted-foreground">
+                  Add a URL and optional display text.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+                onClick={() => setLinkDialogOpen(false)}
+              >
+                <span className="text-lg">×</span>
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="link-url">
+                  URL
+                </label>
+                <input
+                  id="link-url"
+                  value={linkUrl}
+                  onChange={(event) => setLinkUrl(event.target.value)}
+                  className="input w-full"
+                  placeholder="https://example.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="link-text">
+                  Display text
+                </label>
+                <input
+                  id="link-text"
+                  value={linkText}
+                  onChange={(event) => setLinkText(event.target.value)}
+                  className="input w-full"
+                  placeholder="Visible link text"
+                />
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={linkNewTab}
+                  onChange={(event) => setLinkNewTab(event.target.checked)}
+                />
+                Open in new tab
+              </label>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                className="rounded-lg border border-border px-3 py-2 text-sm text-foreground"
+                onClick={() => {
+                  setLinkDialogOpen(false);
+                  setLinkUrl("");
+                  setLinkText("");
+                  setLinkNewTab(true);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded-lg bg-cyan-500 px-3 py-2 text-sm font-semibold text-white"
+                onClick={insertLinkFromDialog}
+              >
+                Insert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-background/45 p-3">
         {sourceMode ? (
