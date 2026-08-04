@@ -75,7 +75,7 @@ function AdminPage() {
   const [search, setSearch] = React.useState("");
   const [status, setStatus] = React.useState<"all" | "published" | "draft">("all");
   const [categoryId, setCategoryId] = React.useState<string | null>(null);
-  const [sortBy, setSortBy] = React.useState<"updated_at" | "published_at">("updated_at");
+  const [sortBy, setSortBy] = React.useState<"updated_at" | "published_at" | "views" | "title">("updated_at");
   const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("desc");
   const [page, setPage] = React.useState(1);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
@@ -90,25 +90,73 @@ function AdminPage() {
   });
 
   const postsQuery = useQuery<{ posts: BlogPost[]; count: number }, Error>({
-    queryKey: ["adminPosts", search, status, categoryId, sortBy, sortOrder, page],
+    queryKey: ["adminPosts"],
     queryFn: () =>
       listPosts({
         data: {
-          search,
-          status,
-          category_id: categoryId ?? undefined,
-          sort_by: sortBy,
-          sort_order: sortOrder,
-          page,
-          page_size: 12,
+          page: 1,
+          page_size: 50,
         },
       }),
   });
 
   const pageSize = 12;
   const posts = postsQuery.data?.posts ?? [];
-  const totalCount = postsQuery.data?.count ?? 0;
+
+  const filteredPosts = React.useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    return posts
+      .filter((post) => {
+        if (normalizedSearch) {
+          const title = (post.title_en || post.title_ne || "").toLowerCase();
+          const slug = post.slug.toLowerCase();
+          if (!title.includes(normalizedSearch) && !slug.includes(normalizedSearch)) {
+            return false;
+          }
+        }
+
+        if (status === "published") {
+          if (!post.published) return false;
+        }
+
+        if (status === "draft") {
+          if (post.published) return false;
+        }
+
+        if (categoryId) {
+          return post.category_id === categoryId;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        let compareValue = 0;
+
+        if (sortBy === "updated_at") {
+          compareValue =
+            new Date(a.updated_at).getTime() -
+            new Date(b.updated_at).getTime();
+        } else if (sortBy === "published_at") {
+          const aValue = a.published_at ? new Date(a.published_at).getTime() : 0;
+          const bValue = b.published_at ? new Date(b.published_at).getTime() : 0;
+          compareValue = aValue - bValue;
+        } else if (sortBy === "views") {
+          compareValue = (a.views_count ?? 0) - (b.views_count ?? 0);
+        } else if (sortBy === "title") {
+          const aTitle = (a.title_en || a.title_ne || "").toLowerCase();
+          const bTitle = (b.title_en || b.title_ne || "").toLowerCase();
+          compareValue = aTitle.localeCompare(bTitle);
+        }
+
+        return sortOrder === "asc" ? compareValue : -compareValue;
+      });
+  }, [posts, search, status, categoryId, sortBy, sortOrder]);
+
+  const totalCount = filteredPosts.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const displayedPosts = filteredPosts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
 
   const deleteMutation = useMutation({
@@ -204,7 +252,7 @@ function AdminPage() {
 
   function toggleSelectAll(checked: boolean) {
     if (checked) {
-      setSelectedIds(posts.map((post) => post.id));
+      setSelectedIds(displayedPosts.map((post) => post.id));
       return;
     }
     setSelectedIds([]);
@@ -225,7 +273,7 @@ function AdminPage() {
   const drafts = total - published;
 
   const selectedCount = selectedIds.length;
-  const allSelected = selectedCount === posts.length && posts.length > 0;
+  const allSelected = displayedPosts.length > 0 && displayedPosts.every((post) => selectedIds.includes(post.id));
   const anySelected = selectedCount > 0;
 
   const latest = [...posts]
@@ -432,20 +480,22 @@ function AdminPage() {
 
             </div>
 
-            <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)] xl:grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)_minmax(220px,1fr)]">
+            <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-5">
 
-              <Input
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                  setPage(1);
-                  resetSelection();
-                }}
-                placeholder="Search posts..."
-                className="bg-slate-950/80 text-slate-100 placeholder:text-slate-500"
-              />
+              <div className="lg:col-span-2">
+                <Input
+                  value={search}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                    setPage(1);
+                    resetSelection();
+                  }}
+                  placeholder="Search posts..."
+                  className="bg-slate-950/80 text-slate-100 placeholder:text-slate-500"
+                />
+              </div>
 
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div>
                 <Select value={status} onValueChange={(value) => { setStatus(value as "all" | "published" | "draft"); setPage(1); resetSelection(); }}>
                   <SelectTrigger className="w-full bg-slate-950/80 text-slate-100">
                     <SelectValue placeholder="Status" />
@@ -456,19 +506,23 @@ function AdminPage() {
                     <SelectItem value="draft">Draft</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
 
-                <Select value={sortBy} onValueChange={(value) => { setSortBy(value as "updated_at" | "published_at"); setPage(1); }}>
+              <div>
+                <Select value={sortBy} onValueChange={(value) => { setSortBy(value as "updated_at" | "published_at" | "views" | "title"); setPage(1); }}>
                   <SelectTrigger className="w-full bg-slate-950/80 text-slate-100">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="updated_at">Updated date</SelectItem>
                     <SelectItem value="published_at">Publish date</SelectItem>
+                    <SelectItem value="views">Views</SelectItem>
+                    <SelectItem value="title">Title</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div>
                 <Select value={sortOrder} onValueChange={(value) => { setSortOrder(value as "asc" | "desc"); setPage(1); resetSelection(); }}>
                   <SelectTrigger className="w-full bg-slate-950/80 text-slate-100">
                     <SelectValue placeholder="Order" />
@@ -478,7 +532,9 @@ function AdminPage() {
                     <SelectItem value="asc">Oldest first</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
 
+              <div className="lg:col-span-2 min-w-[280px]">
                 <Select value={categoryId ?? ""} onValueChange={(value) => { setCategoryId(value || null); setPage(1); resetSelection(); }}>
                   <SelectTrigger className="w-full bg-slate-950/80 text-slate-100">
                     <SelectValue placeholder="Category" />
@@ -529,7 +585,7 @@ function AdminPage() {
 
 
 
-              {posts.length > 0 && (
+              {filteredPosts.length > 0 && (
 
                 <>
 
@@ -631,7 +687,7 @@ function AdminPage() {
                     <tbody>
 
 
-                    {posts.map((post)=>(
+                    {displayedPosts.map((post)=>(
 
                       <tr
                         key={post.id}
