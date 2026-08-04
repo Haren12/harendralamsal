@@ -236,6 +236,7 @@ const EditorUtilities = Extension.create({
 });
 
 const imageExtension = Image.extend({
+  marks: "_",
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -263,11 +264,18 @@ export function RichTextEditor({
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [imageAlt, setImageAlt] = useState("");
-  const [imageUploadProgress, setImageUploadProgress] = useState("");
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [linkText, setLinkText] = useState("");
   const [linkNewTab, setLinkNewTab] = useState(true);
+  const [imageLinkDialogOpen, setImageLinkDialogOpen] = useState(false);
+  const [imageLinkUrl, setImageLinkUrl] = useState("");
+  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [findReplaceDialogOpen, setFindReplaceDialogOpen] = useState(false);
+  const [findText, setFindText] = useState("");
+  const [replaceText, setReplaceText] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const imageFileRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -331,13 +339,16 @@ export function RichTextEditor({
 
   useEffect(() => {
     if (!editor || value === editor.getHTML()) return;
-    editor.commands.setContent(value || "", false);
+    editor.commands.setContent(value || "", { emitUpdate: false });
   }, [editor, value]);
 
   useEffect(() => {
     const openLinkDialog = () => {
       const previous = editor?.getAttributes("link").href as string | undefined;
-      const selectionText = editor?.state.selection.textContent ?? "";
+      const selection = editor?.state.selection;
+      const selectionText = selection
+        ? editor.state.doc.textBetween(selection.from, selection.to, " ")
+        : "";
       setLinkUrl(previous ?? "");
       setLinkText(selectionText || "");
       setLinkNewTab(previous ? editor?.getAttributes("link").target === "_blank" : true);
@@ -355,6 +366,7 @@ export function RichTextEditor({
 
   async function insertFiles(files: File[]) {
     if (!editor) return;
+    setUploadingImage(true);
     for (const file of files) {
       if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
         toast.error(`${file.name} is not a supported image type`);
@@ -369,56 +381,31 @@ export function RichTextEditor({
         editor
           .chain()
           .focus()
-          .insertContent(
-            `<figure class="media media-center"><img src="${src}" alt="${escapeHtml(file.name.replace(/\.[^.]+$/, ""))}" loading="lazy" /></figure><p></p>`,
-          )
+          .setImage({ src, alt: file.name.replace(/\.[^.]+$/, "") })
+          .createParagraphNear()
           .run();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Image upload failed");
       }
     }
-  }
-
-  async function handleImageUpload(file: File) {
-    if (!editor) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      toast.error("Only JPEG, PNG, and WebP images are supported");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5 MB");
-      return;
-    }
-
-    setImageUploadProgress("Uploading...");
-    try {
-      const src = await uploadImage(file);
-      setImageUrl(src);
-      setImageAlt(file.name.replace(/\.[^.]+$/, ""));
-      setImageUploadProgress("Ready to insert");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Image upload failed");
-      setImageUploadProgress("");
-    }
+    setUploadingImage(false);
   }
 
   function insertImageFromDialog() {
     if (!editor || !imageUrl) {
-      toast.error("Please add an image URL or upload one first");
+      toast.error("Please add an image URL");
       return;
     }
 
     editor
       .chain()
       .focus()
-      .insertContent(
-        `<figure class="media media-center"><img src="${imageUrl}" alt="${escapeHtml(imageAlt)}" loading="lazy" /></figure><p></p>`,
-      )
+      .setImage({ src: normalizeUrl(imageUrl), alt: imageAlt })
+      .createParagraphNear()
       .run();
     setImageDialogOpen(false);
     setImageUrl("");
     setImageAlt("");
-    setImageUploadProgress("");
   }
 
   function insertLinkFromDialog() {
@@ -447,24 +434,48 @@ export function RichTextEditor({
     setLinkNewTab(true);
   }
 
-  function insertVideo() {
+  function insertImageLinkFromDialog() {
     if (!editor) return;
-    const url = window.prompt("YouTube, Vimeo, or uploaded video URL");
-    if (!url) return;
-    const embed = getVideoEmbed(url);
+    if (!editor.isActive("image")) {
+      toast.error("Select an image in the editor first");
+      return;
+    }
+    const href = normalizeUrl(imageLinkUrl);
+    if (!href) {
+      toast.error("Please enter a URL");
+      return;
+    }
+    editor.chain().focus().setLink({ href, target: "_blank", rel: "noopener noreferrer" }).run();
+    setImageLinkDialogOpen(false);
+    setImageLinkUrl("");
+  }
+
+  function insertVideoFromDialog() {
+    if (!editor) return;
+    if (!videoUrl.trim()) {
+      toast.error("Please enter a video URL");
+      return;
+    }
+    const embed = getVideoEmbed(videoUrl);
     editor.chain().focus().insertContent(embed).run();
+    setVideoDialogOpen(false);
+    setVideoUrl("");
   }
 
   function insertGallery() {
     imageFileRef.current?.click();
   }
 
-  function findReplace() {
+  function applyFindReplace() {
     if (!editor) return;
-    const find = window.prompt("Find text");
-    if (!find) return;
-    const replace = window.prompt("Replace with", "") ?? "";
-    editor.commands.setContent(cleanHtml(editor.getHTML()).replaceAll(find, replace));
+    if (!findText) {
+      toast.error("Please enter text to find");
+      return;
+    }
+    editor.commands.setContent(cleanHtml(editor.getHTML()).replaceAll(findText, replaceText));
+    setFindReplaceDialogOpen(false);
+    setFindText("");
+    setReplaceText("");
   }
 
   async function pastePlainText() {
@@ -524,10 +535,19 @@ export function RichTextEditor({
 
         <RichTextToolbar
           editor={editor}
-          onInsertImage={() => setImageDialogOpen(true)}
+          onUploadImage={() => imageFileRef.current?.click()}
+          onInsertImageUrl={() => setImageDialogOpen(true)}
           onInsertGallery={insertGallery}
-          onInsertVideo={insertVideo}
-          onFindReplace={findReplace}
+          onAddImageLink={() => {
+            if (!editor?.isActive("image")) {
+              toast.error("Select an image in the editor first");
+              return;
+            }
+            setImageLinkUrl((editor.getAttributes("link").href as string | undefined) ?? "");
+            setImageLinkDialogOpen(true);
+          }}
+          onInsertVideo={() => setVideoDialogOpen(true)}
+          onFindReplace={() => setFindReplaceDialogOpen(true)}
           onPlainPaste={pastePlainText}
         />
       </div>
@@ -552,7 +572,7 @@ export function RichTextEditor({
               <div>
                 <p className="text-sm font-semibold text-foreground">Insert image</p>
                 <p className="text-sm text-muted-foreground">
-                  Upload a file or paste an image URL to add it to the editor.
+                  Paste an external image URL to add it to the editor.
                 </p>
               </div>
               <button
@@ -565,19 +585,6 @@ export function RichTextEditor({
             </div>
 
             <div className="mt-4 space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                  onClick={() => imageFileRef.current?.click()}
-                >
-                  Upload Image
-                </button>
-                <span className="text-sm text-muted-foreground">
-                  {imageUploadProgress || "JPEG, PNG, or WebP • max 5MB"}
-                </span>
-              </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground" htmlFor="image-url">
                   Image URL
@@ -624,7 +631,6 @@ export function RichTextEditor({
                   setImageDialogOpen(false);
                   setImageUrl("");
                   setImageAlt("");
-                  setImageUploadProgress("");
                 }}
               >
                 Cancel
@@ -639,6 +645,35 @@ export function RichTextEditor({
             </div>
           </div>
         </div>
+      )}
+
+      {imageLinkDialogOpen && (
+        <DialogShell
+          title="Add link to image"
+          description="Attach a URL to the selected image."
+          onClose={() => setImageLinkDialogOpen(false)}
+        >
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground" htmlFor="image-link-url">
+              URL
+            </label>
+            <input
+              id="image-link-url"
+              value={imageLinkUrl}
+              onChange={(event) => setImageLinkUrl(event.target.value)}
+              className="input w-full"
+              placeholder="https://example.com"
+            />
+          </div>
+          <DialogActions
+            confirmLabel="Add link"
+            onCancel={() => {
+              setImageLinkDialogOpen(false);
+              setImageLinkUrl("");
+            }}
+            onConfirm={insertImageLinkFromDialog}
+          />
+        </DialogShell>
       )}
 
       {linkDialogOpen && (
@@ -722,6 +757,75 @@ export function RichTextEditor({
         </div>
       )}
 
+      {videoDialogOpen && (
+        <DialogShell
+          title="Insert video"
+          description="Add a YouTube, Vimeo, or uploaded video URL."
+          onClose={() => setVideoDialogOpen(false)}
+        >
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground" htmlFor="video-url">
+              Video URL
+            </label>
+            <input
+              id="video-url"
+              value={videoUrl}
+              onChange={(event) => setVideoUrl(event.target.value)}
+              className="input w-full"
+              placeholder="https://youtube.com/watch?v=..."
+            />
+          </div>
+          <DialogActions
+            confirmLabel="Insert"
+            onCancel={() => {
+              setVideoDialogOpen(false);
+              setVideoUrl("");
+            }}
+            onConfirm={insertVideoFromDialog}
+          />
+        </DialogShell>
+      )}
+
+      {findReplaceDialogOpen && (
+        <DialogShell
+          title="Find and replace"
+          description="Replace matching text in the current editor content."
+          onClose={() => setFindReplaceDialogOpen(false)}
+        >
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground" htmlFor="find-text">
+              Find
+            </label>
+            <input
+              id="find-text"
+              value={findText}
+              onChange={(event) => setFindText(event.target.value)}
+              className="input w-full"
+            />
+          </div>
+          <div className="mt-4 space-y-2">
+            <label className="text-sm font-medium text-foreground" htmlFor="replace-text">
+              Replace with
+            </label>
+            <input
+              id="replace-text"
+              value={replaceText}
+              onChange={(event) => setReplaceText(event.target.value)}
+              className="input w-full"
+            />
+          </div>
+          <DialogActions
+            confirmLabel="Replace"
+            onCancel={() => {
+              setFindReplaceDialogOpen(false);
+              setFindText("");
+              setReplaceText("");
+            }}
+            onConfirm={applyFindReplace}
+          />
+        </DialogShell>
+      )}
+
       <div className="bg-background/45 p-3">
         {sourceMode ? (
           <textarea
@@ -756,7 +860,9 @@ export function RichTextEditor({
 
       <div className="flex items-center gap-2 border-t border-border bg-cyan-400/5 px-4 py-3 text-xs text-cyan-100/80">
         <Upload className="h-4 w-4" />
-        Drag and drop images into the editor, or use the image button for uploads.
+        {uploadingImage
+          ? "Uploading image..."
+          : "Drag and drop images into the editor, or use the image button for uploads."}
       </div>
     </section>
   );
@@ -799,6 +905,68 @@ function SeoItem({ ok, text }: { ok: boolean; text: string }) {
     >
       {ok ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
       {text}
+    </div>
+  );
+}
+
+function DialogShell({
+  title,
+  description,
+  children,
+  onClose,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-foreground">{title}</p>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+          <button
+            type="button"
+            className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+            onClick={onClose}
+          >
+            <span className="text-lg">×</span>
+          </button>
+        </div>
+        <div className="mt-4">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function DialogActions({
+  confirmLabel,
+  onCancel,
+  onConfirm,
+}: {
+  confirmLabel: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="mt-6 flex justify-end gap-2">
+      <button
+        type="button"
+        className="rounded-lg border border-border px-3 py-2 text-sm text-foreground"
+        onClick={onCancel}
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        className="rounded-lg bg-cyan-500 px-3 py-2 text-sm font-semibold text-white"
+        onClick={onConfirm}
+      >
+        {confirmLabel}
+      </button>
     </div>
   );
 }
@@ -848,6 +1016,14 @@ function getSeoChecks(html: string) {
     ),
     tablesResponsive: true,
   };
+}
+
+function normalizeUrl(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  return trimmed.startsWith("http://") || trimmed.startsWith("https://")
+    ? trimmed
+    : `https://${trimmed}`;
 }
 
 function getVideoEmbed(url: string) {

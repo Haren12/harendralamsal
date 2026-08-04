@@ -17,6 +17,7 @@ import {
   Heading,
   Highlighter,
   Image as ImageIcon,
+  ImageUp,
   Indent,
   Info,
   Italic,
@@ -56,8 +57,10 @@ import { cn } from "@/lib/utils";
 
 type RichTextToolbarProps = {
   editor: Editor | null;
-  onInsertImage: () => void;
+  onUploadImage: () => void;
+  onInsertImageUrl: () => void;
   onInsertGallery: () => void;
+  onAddImageLink: () => void;
   onInsertVideo: () => void;
   onFindReplace: () => void;
   onPlainPaste: () => void;
@@ -76,8 +79,10 @@ const lineHeights = ["1.2", "1.4", "1.6", "1.8", "2"];
 
 export function RichTextToolbar({
   editor,
-  onInsertImage,
+  onUploadImage,
+  onInsertImageUrl,
   onInsertGallery,
+  onAddImageLink,
   onInsertVideo,
   onFindReplace,
   onPlainPaste,
@@ -375,12 +380,14 @@ export function RichTextToolbar({
       </ToolbarMenu>
 
       <ToolbarMenu icon={ImageIcon} label="Media">
-        <MenuItem icon={ImageIcon} label="Insert / upload image" onClick={onInsertImage} />
+        <MenuItem icon={ImageUp} label="Upload image" onClick={onUploadImage} />
+        <MenuItem icon={ImageIcon} label="Insert image URL" onClick={onInsertImageUrl} />
         <MenuItem
           icon={ImageIcon}
           label="Insert multiple images / gallery"
           onClick={onInsertGallery}
         />
+        <MenuItem icon={Link} label="Add link to image" onClick={onAddImageLink} />
         <MenuItem icon={Video} label="YouTube, Vimeo, or uploaded video" onClick={onInsertVideo} />
         <DropdownMenuSeparator />
         <MenuItem
