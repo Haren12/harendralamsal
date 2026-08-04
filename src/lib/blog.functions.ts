@@ -11,7 +11,7 @@ const POST_SELECT = `
   cover_image_url, category_id, tags, lang, reading_minutes, views_count,
   seo_title, seo_description, focus_keyword, secondary_keywords,
   internal_link_suggestions, external_references,
-  published, published_at, created_at, updated_at,
+  published, published_at, deleted_at, created_at, updated_at,
   category:blog_categories(name_en, name_ne, slug)
 `;
 
@@ -51,6 +51,16 @@ function getServerSupabaseEnv() {
     serviceRoleKey:
       process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
   };
+}
+
+async function updateBlogPostsByIds(
+  supabase: AppSupabaseClient,
+  ids: string[],
+  payload: Partial<Database["public"]["Tables"]["blog_posts"]["Update"]>,
+) {
+  const { error } = await supabase.from("blog_posts").update(payload).in("id", ids);
+  if (error) throw new Error(error.message);
+  return { ok: true };
 }
 
 function publicClient() {
@@ -265,6 +275,7 @@ export const adminListPosts = createServerFn({ method: "GET" })
         sort_order: z.enum(["asc", "desc"]).default("desc"),
         page: z.number().int().min(1).default(1),
         page_size: z.number().int().min(1).max(50).default(12),
+        trash: z.boolean().default(false),
       })
       .parse(d),
   )
@@ -279,6 +290,12 @@ export const adminListPosts = createServerFn({ method: "GET" })
       query.or(
         `title_en.ilike.${pattern},title_ne.ilike.${pattern},slug.ilike.${pattern},excerpt_en.ilike.${pattern},excerpt_ne.ilike.${pattern}`,
       );
+    }
+
+    if (data.trash) {
+      query.not("deleted_at", "is", null);
+    } else {
+      query.is("deleted_at", null);
     }
 
     if (data.status === "published") {
@@ -413,6 +430,38 @@ export const adminDeletePosts = createServerFn({ method: "POST" })
     const { error } = await context.supabase.from("blog_posts").delete().in("id", data.ids);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const adminTrashPosts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ids: z.array(z.string().uuid()).min(1),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId, context.claims);
+    return updateBlogPostsByIds(context.supabase, data.ids, {
+      deleted_at: new Date().toISOString(),
+    });
+  });
+
+export const adminRestorePosts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ids: z.array(z.string().uuid()).min(1),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId, context.claims);
+    return updateBlogPostsByIds(context.supabase, data.ids, {
+      deleted_at: null,
+    });
   });
 
 export const adminUpdatePosts = createServerFn({ method: "POST" })

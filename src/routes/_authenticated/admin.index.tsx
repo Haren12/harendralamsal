@@ -34,8 +34,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  adminDeletePost,
-  adminDeletePosts,
+  adminTrashPosts,
   adminListPosts,
   adminUpdatePosts,
   listCategoriesPublic,
@@ -67,8 +66,7 @@ function AdminPage() {
   const queryClient = useQueryClient();
 
   const listPosts = useServerFn(adminListPosts);
-  const deletePost = useServerFn(adminDeletePost);
-  const deletePosts = useServerFn(adminDeletePosts);
+  const trashPosts = useServerFn(adminTrashPosts);
   const updatePosts = useServerFn(adminUpdatePosts);
   const listCategories = useServerFn(listCategoriesPublic);
 
@@ -159,16 +157,16 @@ function AdminPage() {
   const displayedPosts = filteredPosts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
 
-  const deleteMutation = useMutation({
+  const trashMutation = useMutation({
     mutationFn: (id: string) =>
-      deletePost({
+      trashPosts({
         data: {
-          id,
+          ids: [id],
         },
       }),
 
     onSuccess() {
-      toast.success("Post deleted successfully");
+      toast.success("Post moved to trash");
 
       queryClient.invalidateQueries({
         queryKey: ["adminPosts"],
@@ -179,7 +177,7 @@ function AdminPage() {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Delete failed",
+          : "Move to trash failed",
       );
     },
   });
@@ -218,11 +216,11 @@ function AdminPage() {
     },
   });
 
-  const bulkDeleteMutation = useMutation({
+  const bulkTrashMutation = useMutation({
     mutationFn: (ids: string[]) =>
-      deletePosts({ data: { ids } }),
+      trashPosts({ data: { ids } }),
     onSuccess() {
-      toast.success("Posts deleted successfully");
+      toast.success("Posts moved to trash");
       queryClient.invalidateQueries({ queryKey: ["adminPosts"] });
       setSelectedIds([]);
     },
@@ -328,6 +326,12 @@ function AdminPage() {
               to="/admin/new"
               label="New Post"
               icon={Plus}
+            />
+
+            <SidebarLink
+              to="/admin/trash"
+              label="Trash"
+              icon={Trash2}
             />
 
             <SidebarLink
@@ -604,7 +608,7 @@ function AdminPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={!anySelected || bulkPublishMutation.isLoading || bulkUnpublishMutation.isLoading || bulkDeleteMutation.isLoading}
+                        disabled={!anySelected || bulkPublishMutation.isLoading || bulkUnpublishMutation.isLoading || bulkTrashMutation.isLoading}
                         onClick={() => bulkPublishMutation.mutate(selectedIds)}
                       >
                         Publish
@@ -613,7 +617,7 @@ function AdminPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={!anySelected || bulkPublishMutation.isLoading || bulkUnpublishMutation.isLoading || bulkDeleteMutation.isLoading}
+                        disabled={!anySelected || bulkPublishMutation.isLoading || bulkUnpublishMutation.isLoading || bulkTrashMutation.isLoading}
                         onClick={() => bulkUnpublishMutation.mutate(selectedIds)}
                       >
                         Unpublish
@@ -622,10 +626,10 @@ function AdminPage() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        disabled={!anySelected || bulkPublishMutation.isLoading || bulkUnpublishMutation.isLoading || bulkDeleteMutation.isLoading}
+                        disabled={!anySelected || bulkPublishMutation.isLoading || bulkUnpublishMutation.isLoading || bulkTrashMutation.isLoading}
                         onClick={() => {
                           if (window.confirm(`Delete ${selectedCount} selected post${selectedCount === 1 ? "" : "s"}?`)) {
-                            bulkDeleteMutation.mutate(selectedIds);
+                            bulkTrashMutation.mutate(selectedIds);
                           }
                         }}
                       >
@@ -838,7 +842,7 @@ function AdminPage() {
                                   );
 
                                 if(ok){
-                                  deleteMutation.mutate(
+                                  trashMutation.mutate(
                                     post.id
                                   );
                                 }

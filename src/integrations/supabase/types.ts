@@ -49,6 +49,7 @@ export type Database = {
           lang: string;
           published: boolean;
           published_at: string | null;
+          deleted_at: string | null;
           reading_minutes: number;
           seo_description: string | null;
           seo_title: string | null;
@@ -76,6 +77,7 @@ export type Database = {
           lang?: string;
           published?: boolean;
           published_at?: string | null;
+          deleted_at?: string | null;
           reading_minutes?: number;
           seo_description?: string | null;
           seo_title?: string | null;
@@ -103,6 +105,7 @@ export type Database = {
           lang?: string;
           published?: boolean;
           published_at?: string | null;
+          deleted_at?: string | null;
           reading_minutes?: number;
           seo_description?: string | null;
           seo_title?: string | null;
