@@ -464,6 +464,60 @@ export const adminRestorePosts = createServerFn({ method: "POST" })
     });
   });
 
+export const adminUploadImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        name: z.string().min(1),
+        mime: z.enum(["image/jpeg", "image/png", "image/webp"]),
+        base64: z.string().min(1),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId, context.claims);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // decode base64
+    const buffer = Buffer.from(data.base64, "base64");
+
+    const MAX_BYTES = 5 * 1024 * 1024; // 5MB
+    if (buffer.length > MAX_BYTES) {
+      throw new Error("File too large; maximum allowed is 5MB");
+    }
+
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+
+    const uuid = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : (Math.random().toString(36).slice(2) + Date.now().toString(36));
+
+    // sanitize filename
+    const safeName = data.name.replace(/[^a-zA-Z0-9.\-_]/g, "-").slice(0, 200);
+    const path = `posts/${year}/${month}/${uuid}-${safeName}`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from("blog-images")
+      .upload(path, buffer, { contentType: data.mime });
+
+    if (uploadError) throw new Error(uploadError.message);
+
+    const { data: publicData, error: publicError } = supabaseAdmin.storage
+      .from("blog-images")
+      .getPublicUrl(path);
+
+    if (publicError) throw new Error(publicError.message);
+
+    return {
+      url: publicData.publicUrl,
+      path,
+    };
+  });
+
 export const adminUpdatePosts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
